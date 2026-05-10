@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sajar BD | My Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #4CAF50; --bg: #f8f9fa; --danger: #ff4757; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); padding-bottom: 80px; }
+        
+        /* Header Style */
+        .p-header { background: var(--primary); color: white; padding: 40px 20px; text-align: center; border-radius: 0 0 30px 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .container { padding: 20px; max-width: 500px; margin: auto; }
+        
+        /* Auth Card */
+        .auth-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; margin-top: 50px; }
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #eee; border-radius: 10px; box-sizing: border-box; background: #fdfdfd; }
+        .btn-auth { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        
+        /* Stats Card */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: -30px; }
+        .stat-card { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; }
+        .stat-card b { color: var(--primary); font-size: 18px; display: block; }
+        .stat-card span { font-size: 12px; color: #666; }
+
+        /* Order Card */
+        .order-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .status-badge { float: right; font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
+
+        /* Bottom Menu */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); border-radius: 20px 20px 0 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; border: none; background: none; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.logout-btn { color: var(--danger); }
+        .nav-item i { font-size: 18px; display: block; margin-bottom: 4px; }
+
+        .section-title { margin-top: 25px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="authView" class="container" style="display:none;">
+    <div class="auth-card">
+        <h3 id="authTitle">লগইন করুন</h3>
+        <div id="signupFields" style="display: none;">
+            <input type="text" id="regName" placeholder="আপনার পূর্ণ নাম">
+            <textarea id="regAddress" placeholder="আপনার বিস্তারিত ঠিকানা"></textarea>
+            <input type="text" id="regRefer" placeholder="রেফার কোড (ঐচ্ছিক)">
+        </div>
+        <input type="phone" id="authPhone" placeholder="মোবাইল নাম্বার">
+        <input type="password" id="authPass" placeholder="পাসওয়ার্ড">
+        <button class="btn-auth" id="authBtn" onclick="handleAuth()">লগইন</button>
+        <p onclick="toggleAuth()" id="toggleLink" style="cursor:pointer; color:var(--primary); text-decoration:underline; margin-top:15px; font-size: 14px;">নতুন একাউন্ট খুলুন</p>
+    </div>
+</div>
+
+<div id="profileView" style="display:none;">
+    <div class="p-header">
+        <i class="fas fa-user-circle fa-4x"></i>
+        <h2 id="uName" style="margin: 10px 0 5px;">...</h2>
+        <p id="uPhone" style="margin: 0; opacity: 0.9; font-size: 14px;"></p>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span>বর্তমান ব্যালেন্স</span>
+                <b id="uBalance">৳ ০.০০</b>
+            </div>
+            <div class="stat-card">
+                <span>মোট অর্ডার</span>
+                <b id="orderCount">০</b>
+            </div>
+        </div>
+
+        <h4 class="section-title"><i class="fas fa-history"></i> সাম্প্রতিক ৫টি অর্ডার</h4>
+        <div id="orderList">লোড হচ্ছে...</div>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <a href="index.html" class="nav-item"><i class="fas fa-home"></i>হোম</a>
+    <a href="#" class="nav-item"><i class="fas fa-th-large"></i>ক্যাটাগরি</a>
+    <a href="#" class="nav-item"><i class="fas fa-shopping-cart"></i>কার্ট</a>
+    <a href="#" class="nav-item active"><i class="fas fa-user"></i>প্রোফাইল</a>
+    <div class="nav-item logout-btn" onclick="logout()" id="logoutMenuBtn" style="display:none;">
+        <i class="fas fa-sign-out-alt"></i>লগ আউট
+    </div>
+</div>
+
+<script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyri0pZm0-B0Dp1yKhp6PA0hvn6fKl5UmfRsu3P_mjCSlZRy88Af7P8LZ8m_ij4VdDQ/exec";
+    let isSignupMode = false;
+
+    window.onload = checkUser;
+
+    function toggleAuth() {
+        isSignupMode = !isSignupMode;
+        document.getElementById('signupFields').style.display = isSignupMode ? 'block' : 'none';
+        document.getElementById('authTitle').innerText = isSignupMode ? 'নতুন একাউন্ট' : 'লগইন করুন';
+        document.getElementById('authBtn').innerText = isSignupMode ? 'সাইন-আপ' : 'লগইন';
+        document.getElementById('toggleLink').innerText = isSignupMode ? 'পুরানো একাউন্ট আছে? লগইন করুন' : 'নতুন একাউন্ট খুলুন';
+    }
+
+    async function handleAuth() {
+        const phone = document.getElementById('authPhone').value.trim();
+        const pass = document.getElementById('authPass').value.trim();
+        const name = document.getElementById('regName').value.trim();
+        const address = document.getElementById('regAddress').value.trim();
+        const refer = document.getElementById('regRefer').value.trim();
+
+        if(!phone || !pass) return alert("দয়া করে সব তথ্য দিন");
+        if(isSignupMode && (!name || !address)) return alert("দয়া করে নাম এবং ঠিকানা দিন");
+
+        document.getElementById('authBtn').innerText = "অপেক্ষা করুন...";
+        
+        try {
+            if(isSignupMode) {
+                const checkRes = await fetch(scriptURL + "?type=login");
+                const allUsers = await checkRes.json();
+                const existingUser = allUsers.find(x => x[1].toString() === phone);
+
+                if(existingUser) {
+                    alert("এই নাম্বারটি ইতিমধ্যে নিবন্ধিত!");
+                    toggleAuth();
+                    return;
+                }
+
+                await fetch(scriptURL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify({type:"signup", name, phone, password:pass, address, refer}) 
+                });
+                alert("নিবন্ধন সফল!"); 
+                location.reload();
+            } else {
+                const res = await fetch(scriptURL + "?type=login");
+                const data = await res.json();
+                const u = data.find(x => x[1].toString() === phone && x[2].toString() === pass);
+                if(u) {
+                    localStorage.setItem('sajar_user', JSON.stringify({name:u[0], phone:u[1], balance:u[3], address:u[5]}));
+                    checkUser();
+                } else {
+                    alert("ভুল তথ্য!");
+                    document.getElementById('authBtn').innerText = "লগইন";
+                }
+            }
+        } catch (e) {
+            alert("ত্রুটি হয়েছে!");
+            document.getElementById('authBtn').innerText = isSignupMode ? "সাইন-আপ" : "লগইন";
+        }
+    }
+
+    function checkUser() {
+        const user = JSON.parse(localStorage.getItem('sajar_user'));
+        if(user) {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('profileView').style.display = 'block';
+            document.getElementById('logoutMenuBtn').style.display = 'block'; // Show logout in menu
+            document.getElementById('uName').innerText = user.name;
+            document.getElementById('uPhone').innerText = user.phone;
+            loadOrderHistory(user.phone, user.balance);
+        } else {
+            document.getElementById('authView').style.display = 'block';
+            document.getElementById('profileView').style.display = 'none';
+            document.getElementById('logoutMenuBtn').style.display = 'none'; // Hide logout in menu
+        }
+    }
+
+    async function loadOrderHistory(phone, initialBalance) {
+        try {
+            const res = await fetch(scriptURL + "?type=orderHistory&phone=" + phone);
+            const orders = await res.json();
+            
+            const deliveredOrders = orders.filter(o => o.status === "Delivered");
+            const bonus = deliveredOrders.length * 2;
+            const finalBalance = parseFloat(initialBalance || 0) + bonus;
+
+            document.getElementById('orderCount').innerText = orders.length;
+            document.getElementById('uBalance').innerText = "৳ " + finalBalance.toFixed(2);
+
+            const latestFive = orders.reverse().slice(0, 5);
+            document.getElementById('orderList').innerHTML = latestFive.map(o => `
+                <div class="order-card">
+                    <span class="status-badge" style="${o.status === 'Delivered' ? 'background:#e8f5e9;color:#2e7d32;' : 'background:#fff3e0;color:#ef6c00;'}">${o.status}</span>
+                    <b style="font-size:14px;">${o.pName}</b><br>
+                    <small style="color:#777;">পরিমাণ: ${o.qty} | ${o.date}</small><br>
+                    <span style="color:var(--primary); font-weight:bold;">মোট: ৳${o.total}</span>
+                    ${o.status === 'Delivered' ? '<br><small style="color:#2e7d32; font-weight:bold;">+৳২.০০ বোনাস যুক্ত</small>' : ''}
+                </div>
+            `).join('') || "<p style='text-align:center; color:#999;'>কোনো অর্ডার পাওয়া যায়নি।</p>";
+
+        } catch (e) {
+            document.getElementById('orderList').innerText = "অর্ডার লোড করা যাচ্ছে না।";
+        }
+    }
+
+    function logout() { 
+        if(confirm("আপনি কি লগ আউট করতে চান?")) {
+            localStorage.removeItem('sajar_user'); 
+            location.reload(); 
+        }
+    }
+</script>
+</body>
+</html>

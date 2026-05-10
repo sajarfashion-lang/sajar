@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>সাজর বাজার | পণ্য ও কাস্টমার বিবরণসহ</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding-bottom: 110px; }
+        .header { background: #2E7D32; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .container { padding: 12px; }
+        
+        /* পণ্য কার্ড */
+        .product-card { background: white; border-radius: 15px; padding: 12px; margin-bottom: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .main-info { display: flex; align-items: start; }
+        .product-card img { width: 85px; height: 85px; border-radius: 10px; object-fit: cover; }
+        .details { flex: 1; margin-left: 12px; }
+        .details h4 { margin: 0; font-size: 16px; color: #333; }
+        
+        /* পন্যের মূল বিবরণ (শিট থেকে আসা) */
+        .product-info-text { font-size: 12px; color: #666; margin: 4px 0; line-height: 1.3; font-style: italic; }
+        
+        .price { color: #2E7D32; font-weight: bold; font-size: 15px; display: block; margin: 5px 0; }
+
+        /* কোয়ান্টিটি কন্ট্রোল */
+        .qty-controls { display: flex; align-items: center; gap: 10px; background: #f0f0f0; width: fit-content; padding: 4px 10px; border-radius: 8px; }
+        .qty-btn { border: none; background: none; font-size: 18px; font-weight: bold; color: #2E7D32; cursor: pointer; }
+        .qty-val { font-weight: bold; width: 25px; text-align: center; }
+
+        /* কাস্টমারের ব্যক্তিগত নোট বক্স */
+        .item-note { width: 100%; margin-top: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; font-family: inherit; background: #fafafa; box-sizing: border-box; }
+
+        .add-to-bag { background: #2E7D32; color: white; border: none; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        .add-to-bag.active { background: #d32f2f; }
+
+        /* বটম বার */
+        .footer-bar { position: fixed; bottom: 0; width: 100%; background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 15px rgba(0,0,0,0.1); box-sizing: border-box; z-index: 1000; }
+        .checkout-btn { background: #2E7D32; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* মডাল রিভিউ */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 15px; }
+        .modal-content { background: white; width: 100%; max-width: 420px; padding: 20px; border-radius: 20px; max-height: 85vh; overflow-y: auto; }
+        .order-review-box { background: #f9f9f9; border: 1px dashed #2E7D32; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
+        .review-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 6px 0; }
+        input, textarea { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h3 style="margin:0;">🛒 সাজর বাজার</h3>
+</div>
+
+<div class="container" id="productGrid">
+    <p style="text-align: center; padding: 50px;">লোড হচ্ছে...</p>
+</div>
+
+<div class="footer-bar">
+    <div>
+        <span id="bagCount">০টি পণ্য</span><br>
+        <b>৳ <span id="bagTotal">০</span></b>
+    </div>
+    <button class="checkout-btn" onclick="openOrderModal()">অর্ডার করুন</button>
+</div>
+
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:#2E7D32; text-align:center;">অর্ডার রিভিউ</h3>
+        <div class="order-review-box" id="orderReview"></div>
+        <input type="text" id="uName" placeholder="আপনার নাম">
+        <input type="tel" id="uPhone" placeholder="মোবাইল নাম্বার">
+        <input type="text" id="uAddress" placeholder="ডেলিভারি ঠিকানা">
+        <button class="checkout-btn" id="confirmBtn" style="width:100%; margin-top:10px;" onclick="sendFinalOrder()">অর্ডার নিশ্চিত করুন</button>
+        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#888; margin-top:10px; cursor:pointer;">বন্ধ করুন</button>
+    </div>
+</div>
+
+<script>
+    const api = "https://opensheet.elk.sh/166M3t5JrA8yPBShXk7XHlerEg6DJKg4kpTGlolQLLDs/Sheet1";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwOXtHZ7nOeQVrh49harHKJbgZK8TymA9AeuXUpYoEeyVB78-pDqq6Xm7n18rR5Zn8d/exec";
+    
+    let bag = [];
+
+    async function getProducts() {
+        const res = await fetch(api);
+        const data = await res.json();
+        let html = "";
+        data.forEach((p, i) => {
+            html += `
+            <div class="product-card">
+                <div class="main-info">
+                    <img src="${p.image}">
+                    <div class="details">
+                        <h4>${p.name}</h4>
+                        <div class="product-info-text">${p.description || 'বিবরণ নেই'}</div> <span class="price">৳ ${p.price}</span>
+                        <div class="qty-controls">
+                            <button class="qty-btn" onclick="changeQty(${i}, -1)">-</button>
+                            <span class="qty-val" id="q_${i}">1</span>
+                            <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <textarea class="item-note" id="note_${i}" placeholder="এই পণ্যটি নিয়ে বিশেষ কোনো অনুরোধ থাকলে লিখুন (ঐচ্ছিক)..."></textarea>
+                <button class="add-to-bag" id="btn_${i}" onclick="addToBag('${p.name}', ${p.price}, ${i})">ব্যাগে যোগ করুন</button>
+            </div>`;
+        });
+        document.getElementById('productGrid').innerHTML = html;
+    }
+
+    function changeQty(id, val) {
+        let el = document.getElementById('q_' + id);
+        let current = parseInt(el.innerText);
+        if (current + val >= 1) el.innerText = current + val;
+    }
+
+    function addToBag(name, price, id) {
+        const btn = document.getElementById('btn_' + id);
+        const qty = parseInt(document.getElementById('q_' + id).innerText);
+        const note = document.getElementById('note_' + id).value;
+        const index = bag.findIndex(x => x.name === name);
+
+        if (index > -1) {
+            bag.splice(index, 1);
+            btn.innerText = "ব্যাগে যোগ করুন"; btn.classList.remove('active');
+        } else {
+            bag.push({ name, price, qty, note });
+            btn.innerText = "সরিয়ে ফেলুন"; btn.classList.add('active');
+        }
+        updateStatus();
+    }
+
+    function updateStatus() {
+        let total = 0;
+        bag.forEach(x => total += (x.price * x.qty));
+        document.getElementById('bagTotal').innerText = total;
+        document.getElementById('bagCount').innerText = bag.length + " টি পণ্য";
+    }
+
+    function openOrderModal() {
+        if (bag.length === 0) return alert("প্রথমে পণ্য যোগ করুন!");
+        let reviewHtml = "";
+        bag.forEach(item => {
+            reviewHtml += `<div class="review-item"><b>${item.name}</b> (${item.qty}টি) ${item.note ? `<br><small style="color:blue;">নোট: ${item.note}</small>` : ""}</div>`;
+        });
+        document.getElementById('orderReview').innerHTML = reviewHtml;
+        document.getElementById('orderModal').style.display = 'flex';
+        const user = JSON.parse(localStorage.getItem('sajar_user'));
+        if(user) {
+            document.getElementById('uName').value = user.name;
+            document.getElementById('uPhone').value = user.phone;
+            document.getElementById('uAddress').value = user.address;
+        }
+    }
+
+    function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+
+    function sendFinalOrder() {
+        const name = document.getElementById('uName').value;
+        const phone = document.getElementById('uPhone').value;
+        const address = document.getElementById('uAddress').value;
+        if(!name || !phone || !address) return alert("সব তথ্য দিন!");
+
+        const pNames = bag.map(x => `${x.name}(${x.qty}টি)`).join(", ");
+        const pNotes = bag.map(x => x.note ? `${x.name}: ${x.note}` : "").filter(x => x !== "").join(" | ");
+
+        const btn = document.getElementById('confirmBtn');
+        btn.innerText = "অর্ডার যাচ্ছে..."; btn.disabled = true;
+
+        const data = {
+            type: "order",
+            date: new Date().toLocaleString('bn-BD'),
+            pName: pNames,
+            description: pNotes || "নেই",
+            total: "৳ " + document.getElementById('bagTotal').innerText,
+            customerName: name, phone: phone, address: address
+        };
+
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
+        .then(() => { alert("অর্ডার সফল হয়েছে!"); location.reload(); })
+        .catch(() => { alert("ত্রুটি হয়েছে!"); btn.disabled = false; });
+    }
+
+    window.onload = getProducts;
+</script>
+
+</body>
+</html>

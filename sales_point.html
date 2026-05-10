@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ডেলিভারি ঘর | Sajar BD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; padding-bottom: 90px; }
+        .mgr-header { background: #1a252f; padding: 30px; text-align: center; border-bottom: 4px solid #4CAF50; }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        .order-box { background: white; color: #333; padding: 18px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 5px solid #4CAF50; }
+        .order-info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .customer-section { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px dashed #ccc; }
+        .desc-section { background: #f0f7ff; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 5px solid #3498db; }
+        .status-select { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 2px solid #4CAF50; font-weight: bold; }
+        .btn-mgr { background: #4CAF50; color: white; padding: 14px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .balance-card { background: #fff; color: #333; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a252f; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #4CAF50; z-index: 1000; }
+        .nav-item { color: white; text-decoration: none; text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 3px; }
+        #productModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; overflow-y: auto; }
+        .modal-content { background: white; color: #333; margin: 5% auto; padding: 20px; width: 90%; max-width: 450px; border-radius: 15px; }
+        .warning-box { background: #e74c3c; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-top: 20px; }
+        input, textarea, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="mAuthView" class="container">
+    <div style="background:#34495e; padding:25px; border-radius:15px; margin-top: 50px;">
+        <h3 id="mTitle" style="text-align:center; color: white;">ম্যানেজার লগইন</h3>
+        <div id="signupFields" style="display:none;">
+            <input type="text" id="mName" placeholder="আপনার পূর্ণ নাম">
+            <input type="text" id="mRole" placeholder="পদবি">
+            <input type="text" id="mArea" placeholder="আপনার এরিয়া">
+        </div>
+        <input type="tel" id="mPhone" placeholder="মোবাইল নাম্বার">
+        <input type="password" id="mPass" placeholder="পাসওয়ার্ড">
+        <button class="btn-mgr" onclick="handleMAuth()" id="mBtn">লগইন</button>
+        <p onclick="toggleMSignup()" id="mToggle" style="text-align:center; cursor:pointer; font-size:14px; margin-top:20px; color: #4CAF50;">নতুন আবেদন করুন</p>
+    </div>
+</div>
+
+<div id="mPanelView" style="display:none;">
+    <div class="mgr-header">
+        <h2 id="dispMName" style="margin: 0;"></h2>
+        <span id="dispMId" style="background:#4CAF50; padding:2px 10px; border-radius:10px; font-size:12px;"></span>
+        <p id="dispMRole" style="margin: 8px 0 2px 0; font-size:14px; opacity:0.8;"></p>
+        <small id="dispMArea" style="color:#4CAF50; font-weight:bold;"></small>
+    </div>
+
+    <div class="container">
+        <div class="balance-card">
+            <div>
+                <small style="color: #666;">বর্তমান ব্যালেন্স</small>
+                <h2 id="dispMBalance" style="margin: 0; color: #4CAF50;">৳ 0.00</h2>
+            </div>
+            <i class="fas fa-wallet fa-2x" style="color: #4CAF50; opacity: 0.3;"></i>
+        </div>
+        <h4 style="border-left: 4px solid #4CAF50; padding-left: 10px;">আপনার এরিয়ার অর্ডার লিস্ট</h4>
+        <div id="allOrdersList">অর্ডার লোড হচ্ছে...</div>
+    </div>
+
+    <div class="bottom-nav">
+    <a href="index.html" class="nav-item"><i class="fas fa-home"></i>হোম</a>
+        <div class="nav-item" onclick="openProductModal()"><i class="fas fa-cart-plus" style="color:#2196F3;"></i> পণ্য যুক্ত</div>
+        <div class="nav-item" onclick="logoutM()" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> লগআউট</div>
+    </div>
+</div>
+
+<div id="productModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h3>🛒 পণ্য যুক্ত করুন</h3>
+            <i class="fas fa-times" onclick="closeProductModal()" style="cursor:pointer; font-size:20px;"></i>
+        </div>
+        <input type="text" id="pName" placeholder="পণ্যের নাম">
+        <input type="number" id="pPrice" placeholder="মূল্য">
+        <input type="text" id="pImage" placeholder="ছবির লিঙ্ক">
+        <select id="pCategory">
+            <option value="ডেলি বাজার">ডেলি বাজার</option>
+            <option value="ফ্যাশন">ফ্যাশন</option>
+            <option value="ইলেকট্রনিক">ইলেকট্রনিক</option>
+            <option value="ফুডস">ফুডস</option>
+        </select>
+        <textarea id="pDesc" placeholder="পণ্যের বিবরণ..."></textarea>
+        <input type="text" id="pCode" readonly style="background:#eee;">
+        <button class="btn-mgr" style="background:#2196F3;" onclick="addManagerProduct()">সেভ করুন</button>
+    </div>
+</div>
+
+<script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzVrbtFlXvWFwAY9WZ_5xu9tbX7MvvuHxWATW76HzuKcroKuHsHv-SKaTZszLcK3SUn/exec";
+    
+    window.onload = checkManager;
+
+    function toggleMSignup() {
+        window.isSignupMode = !window.isSignupMode;
+        document.getElementById('signupFields').style.display = window.isSignupMode ? 'block' : 'none';
+        document.getElementById('mTitle').innerText = window.isSignupMode ? 'ম্যানেজার আবেদন' : 'ম্যানেজার লগইন';
+        document.getElementById('mBtn').innerText = window.isSignupMode ? 'আবেদন পাঠান' : 'লগইন';
+    }
+
+    async function handleMAuth() {
+        const phone = document.getElementById('mPhone').value;
+        const pass = document.getElementById('mPass').value;
+        if(!phone || !pass) return alert("তথ্য দিন!");
+        
+        if(window.isSignupMode) {
+            const name = document.getElementById('mName').value;
+            const role = document.getElementById('mRole').value;
+            const area = document.getElementById('mArea').value;
+            await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"mSignup", name, phone, password:pass, role, area}) });
+            alert("আবেদন জমা হয়েছে!"); location.reload();
+        } else {
+            try {
+                const res = await fetch(scriptURL + "?type=mLogin");
+                const data = await res.json();
+                const m = data.find(x => x[1].toString() === phone && x[2].toString() === pass);
+                if(m) {
+                    localStorage.setItem('sajar_manager', JSON.stringify({name: m[0], phone: m[1], role: m[3], balance: m[4], area: m[5], id: m[6]}));
+                    checkManager();
+                } else { alert("ভুল তথ্য!"); }
+            } catch(e) { alert("সার্ভার সমস্যা!"); }
+        }
+    }
+
+    function checkManager() {
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        if(m) {
+            document.getElementById('mAuthView').style.display = 'none';
+            document.getElementById('mPanelView').style.display = 'block';
+            document.getElementById('dispMName').innerText = m.name;
+            document.getElementById('dispMId').innerText = "ID: " + m.id;
+            document.getElementById('dispMRole').innerText = m.role;
+            document.getElementById('dispMArea').innerText = "এরিয়া: " + m.area;
+            document.getElementById('dispMBalance').innerText = "৳ " + parseFloat(m.balance || 0).toFixed(2);
+            document.getElementById('pCode').value = m.id; 
+            loadAllOrders();
+        }
+    }
+
+    async function loadAllOrders() {
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        
+        // ব্যালেন্স ১০ টাকার কম হলে অর্ডার দেখাবে না
+        if (parseFloat(m.balance || 0) < 10) {
+            document.getElementById('allOrdersList').innerHTML = `
+                <div class="warning-box">
+                     স্বাগতম আপনি যদি ১ জন কাস্টমার যুক্ত করেন তাহলে সম্পুর্ন প্যানেলটি পাবেন <br> এখানে পন্য বিক্রয় করে মাসিক ইনকমের সুযোগ পাবেন                </div>`;
+            return;
+        }
+
+        try {
+            const res = await fetch(scriptURL + "?type=getOrders");
+            const orders = await res.json();
+            const filtered = orders.filter(ord => ord.managerId == m.id);
+
+            if(filtered.length === 0) {
+                document.getElementById('allOrdersList').innerHTML = "<p style='text-align:center;'>আপনার এরিয়ায় কোনো অর্ডার নেই।</p>";
+                return;
+            }
+
+            document.getElementById('allOrdersList').innerHTML = filtered.reverse().map(ord => `
+                <div class="order-box">
+                    <div class="order-info-row"><small>${ord.date}</small><b>#${ord.row}</b></div>
+                    <div class="order-info-row"><span>পণ্য:</span><b>${ord.product}</b></div>
+                    <div class="order-info-row"><span>মোট:</span><b>৳${ord.total}</b></div>
+                    <div class="customer-section">
+                        <div><b>${ord.customer}</b></div>
+                        <div>${ord.phone}</div>
+                        <div style="font-size:12px;">${ord.address}</div>
+                    </div>
+                    <div class="desc-section"><small>${ord.desc || "নোট নেই"}</small></div>
+                    <select class="status-select" onchange="updateStatus(${ord.row}, this.value)">
+                        <option value="Pending" ${ord.status=='Pending'?'selected':''}>⏳ Pending</option>
+                        <option value="Delivered" ${ord.status=='Delivered'?'selected':''}>✅ Delivered</option>
+                        <option value="Cancelled" ${ord.status=='Cancelled'?'selected':''}>❌ Cancelled</option>
+                    </select>
+                </div>
+            `).join('');
+        } catch(e) { document.getElementById('allOrdersList').innerHTML = "লোড ব্যর্থ হয়েছে!"; }
+    }
+
+    async function updateStatus(row, status) {
+        if(!confirm("আপনি কি স্ট্যাটাস পরিবর্তন করতে চান?")) return;
+        try {
+            await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"updateStatus", row, status}) });
+            alert("স্ট্যাটাস আপডেট হয়েছে!"); 
+            location.reload();
+        } catch(e) { alert("আপডেট ব্যর্থ হয়েছে!"); }
+    }
+
+    function openProductModal() { document.getElementById('productModal').style.display = 'block'; }
+    function closeProductModal() { document.getElementById('productModal').style.display = 'none'; }
+    function logoutM() { localStorage.removeItem('sajar_manager'); location.reload(); }
+
+    async function addManagerProduct() {
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        const pData = {
+            type: "addProduct",
+            name: document.getElementById('pName').value,
+            price: document.getElementById('pPrice').value,
+            image: document.getElementById('pImage').value,
+            category: document.getElementById('pCategory').value,
+            desc: document.getElementById('pDesc').value,
+            code: m.id
+        };
+        
+        if(!pData.name || !pData.price) return alert("তথ্য দিন!");
+        
+        await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(pData) });
+        alert("পণ্য যুক্ত হয়েছে!");
+        closeProductModal();
+    }
+</script>
+
+</body>
+</html>
