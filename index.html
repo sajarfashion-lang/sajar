@@ -15,6 +15,13 @@
         .nav-title { font-weight: bold; font-size: 18px; }
         .nav-icons { display: flex; align-items: center; gap: 12px; }
 
+        /* ১২টি ক্যাটাগরি গ্রিড - ডাইনামিক */
+        .category-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 10px; background: #fff; margin-bottom: 5px; border-bottom: 1px solid #eee; }
+        .category-item { text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .category-item:active { transform: scale(0.9); }
+        .category-item img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #f0f7f0; padding: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .category-item span { font-size: 10px; font-weight: bold; color: #333; display: block; margin-top: 5px; line-height: 1.2; }
+
         /* কুইক মেনু */
         .quick-menu { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; padding: 15px 5px; margin-bottom: 5px; gap: 5px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 70px; }
         .quick-item { text-decoration: none; color: #333; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
@@ -22,6 +29,9 @@
         .quick-item span { font-size: 11px; font-weight: bold; white-space: nowrap; }
 
         .service-text { font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+
+        /* স্বাগতম মেসেজ */
+        .welcome-msg { background: #e8f5e9; color: #2e7d32; padding: 12px; margin: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; border-left: 5px solid #4CAF50; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
         /* সাইডবার */
         .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #fff; z-index: 2000; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
@@ -35,10 +45,6 @@
         .sidebar-menu i { width: 30px; color: #4CAF50; font-size: 16px; }
         .menu-divider { background: #f8f8f8; padding: 10px 20px; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; }
 
-        .slider img { width: 100%; height: 180px; object-fit: cover; display: block; }
-        .options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; background: #fff; }
-        .options img { width: 100%; aspect-ratio: 1/1; border-radius: 8px; object-fit: cover; background: #eee; }
-        
         /* পণ্য কার্ড */
         .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
         .card { background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; display: flex; flex-direction: column; position: relative; }
@@ -72,25 +78,15 @@
 
 <div class="overlay" id="overlay" onclick="closeAllMenus()"></div>
 
+<!-- বাম মেনু -->
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header"><i class="fas fa-user-circle fa-3x"></i><br>মেনু অপশন</div>
-    <div class="sidebar-menu">
-        <div class="menu-divider">আমার একাউন্ট</div>
-        <a href="card.html"><i class="fas fa-user-tie"></i> ব্যান্ড প্রোমোটর</a>
-        <a href="manager.html"><i class="fas fa-user"></i> মার্কেটিং ম্যানেজার</a>
-        <a href="sales_point.html"><i class="fas fa-shop"></i> ডেলিভারি ঘর</a>
-        
-        <div class="menu-divider">ক্যাটাগরি</div>
-        <a onclick="filterProduct('all')"><i class="fas fa-list"></i> সব পণ্য</a>
-        <a onclick="filterProduct('ডেলি বাজার')"><i class="fas fa-shopping-basket"></i> ডেলি বাজার</a>
-        <a onclick="filterProduct('ইলেকট্রনিক')"><i class="fas fa-bolt"></i> ইলেকট্রনিক</a>
-        <a onclick="filterProduct('ফুডস')"><i class="fas fa-utensils"></i> ফুডস</a>
-        <a onclick="filterProduct('ফ্যাশন এন্ড কসমেটিক্স')"><i class="fas fa-shopping-bag"></i> ফ্যাশন এন্ড কসমেটিক্স</a>
-        <a onclick="filterProduct('ঘরের পন্য')"><i class="fas fa-couch"></i> ঘরের পন্য</a>
-        <a href="bazar.html"><i class="fas fa-shopping-cart"></i> প্রয়োজনীয় বাজার</a>
+    <div class="sidebar-menu" id="leftSidebarMenu">
+        <!-- জাভাস্ক্রিপ্ট দিয়ে পূর্ণ হবে -->
     </div>
 </div>
 
+<!-- ডান মেনু -->
 <div class="sidebar-right" id="sidebarRight">
     <div class="sidebar-header"><i class="fas fa-th-large fa-3x"></i><br>MLN POINTS</div>
     <div class="sidebar-menu" id="rightMenuContent"></div>
@@ -108,19 +104,22 @@
     </div>
 </div>
 
+<!-- কুইক মেনু -->
 <div class="quick-menu" id="quickMenuArea"></div>
 
-<div id="banner-area">
-    <div class="slider"><img id="main-banner" src="" alt="Banner"></div>
-    <div class="options">
-        <img id="opt-1" src="" alt="1">
-        <img id="opt-2" src="" alt="2">
-        <img id="opt-3" src="" alt="3">
-    </div>
+<!-- ১২টি ক্যাটাগরি গ্রিড -->
+<div class="category-section" id="categoryGrid">
+    <!-- গুগল শীট থেকে লোড হবে -->
 </div>
 
+<div class="welcome-msg">
+    <i class="fas fa-shopping-bag"></i> খুব সহজে ঘরে বসে কেনাকাটা করুন।
+</div>
+
+<!-- পণ্য লিস্ট -->
 <div class="products" id="productList">পণ্য লোড হচ্ছে...</div>
 
+<!-- মডালসমূহ -->
 <div id="infoModal" class="modal">
     <div class="modal-box">
         <h3 id="modalTitle" style="color:#4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">তথ্য</h3>
@@ -152,20 +151,23 @@
         
         <label style="font-size:11px; font-weight:bold;">মোট টাকা</label>
         <input type="text" id="orderTotal" readonly style="font-weight:bold; color:#4CAF50; background:#f0f0f0; width:100%; padding:8px; margin-bottom:10px;">
-        
         <hr>
+        <label style="font-size:12px; font-weight:bold;">আপনার নাম</label>
         <input type="text" id="custName" placeholder="আপনার নাম" style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px;">
-        <input type="tel" id="custPhone" placeholder="মোবাইল নাম্বার" style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px;">
-        <textarea id="custAddress" placeholder="ঠিকানা" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;"></textarea>
+        <label style="font-size:12px; font-weight:bold;">মোবাইল নাম্বার</label>
+        <input type="tel" id="custPhone" placeholder="০১৮XXXXXXXX" style="width:100%; padding:10px; margin-bottom:5px; border:1px solid #ddd; border-radius:5px;">
+        <label style="font-size:12px; font-weight:bold;">ঠিকানা</label>
+        <textarea id="custAddress" placeholder="গ্রাম থানা জেলা" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px;"></textarea>
         
         <button class="btn-order" id="confirmBtn" onclick="submitOrder()">অর্ডার নিশ্চিত করুন</button>
         <button onclick="closeOrder()" style="background:none; border:none; color:gray; width:100%; margin-top:10px; cursor:pointer;">বাতিল</button>
     </div>
 </div>
 
+<!-- বটম নেভ -->
 <div class="bottom-nav">
     <a href="index.html" style="color:#4CAF50;"><i class="fas fa-home"></i>হোম</a>
-    <a href="bazar.html"><i class="fas fa-shopping-basket"></i>বাজার</a>
+    <a href="bazar.html"><i class="fas fa-shopping-basket"></i>ডেলি বাজার</a>
     <a onclick="showOrderHistory()"><i class="fas fa-receipt"></i>অর্ডার দেখুন</a>
     <a href="profile.html"><i class="fas fa-user"></i>প্রোফাইল</a>
     <a onclick="toggleRightMenu()"><i class="fas fa-cog"></i>সার্ভিস</a>
@@ -178,6 +180,7 @@
     const serviceApi = "https://opensheet.elk.sh/10qWn7CdBCWXNdbB4C6U54JmVs8mwVMPCrGVcYgIZ6KI/Sheet3";
     const infoApi = "https://opensheet.elk.sh/10qWn7CdBCWXNdbB4C6U54JmVs8mwVMPCrGVcYgIZ6KI/Sheet4";
     const quickMenuApi = "https://opensheet.elk.sh/10qWn7CdBCWXNdbB4C6U54JmVs8mwVMPCrGVcYgIZ6KI/Sheet5";
+    const categoryApi = "https://opensheet.elk.sh/10qWn7CdBCWXNdbB4C6U54JmVs8mwVMPCrGVcYgIZ6KI/Sheet6";
     const sheet7Api = "https://opensheet.elk.sh/10qWn7CdBCWXNdbB4C6U54JmVs8mwVMPCrGVcYgIZ6KI/Sheet7";
 
     let masterList = [];
@@ -190,24 +193,62 @@
     async function loadData() {
         loadQuickMenu();
         loadServiceMenu();
+        loadCategories(); // ক্যাটাগরি লোড ফাংশন
         try {
             const bRes = await fetch(bannerApi);
             const banners = await bRes.json();
-            if(banners[0]){
-                if(banners[0].logo) {
-                    const logoImg = document.getElementById('header-logo');
-                    logoImg.src = banners[0].logo; logoImg.style.display = 'block';
-                }
-                document.getElementById('main-banner').src = banners[0].banner;
-                document.getElementById('opt-1').src = banners[0].img1;
-                document.getElementById('opt-2').src = banners[0].img2;
-                document.getElementById('opt-3').src = banners[0].img3;
+            if(banners[0] && banners[0].logo){
+                const logoImg = document.getElementById('header-logo');
+                logoImg.src = banners[0].logo; logoImg.style.display = 'block';
             }
             const pRes = await fetch(productApi);
             const data = await pRes.json();
             masterList = data.reverse(); 
             display(masterList);
         } catch(e) { console.error("Data load error"); }
+    }
+
+    async function loadCategories() {
+        const grid = document.getElementById('categoryGrid');
+        const sidebar = document.getElementById('leftSidebarMenu');
+        try {
+            const res = await fetch(categoryApi);
+            const data = await res.json();
+            
+            // ক্যাটাগরি গ্রিড তৈরি
+            let gridHtml = "";
+            let sidebarHtml = `
+                <div class="menu-divider">আমার একাউন্ট</div>
+                <a href="card.html"><i class="fas fa-user-tie"></i> ব্যান্ড প্রোমোটর</a>
+                <a href="manager.html"><i class="fas fa-user"></i> মার্কেটিং ম্যানেজার</a>
+                <a href="sales_point.html"><i class="fas fa-shop"></i> ডেলিভারি ঘর</a>
+                <div class="menu-divider">ক্যাটাগরি</div>
+                <a onclick="filterProduct('all')"><i class="fas fa-list"></i> সব পণ্য</a>
+            `;
+
+            data.forEach(cat => {
+                // গ্রিড আইটেম
+                gridHtml += `
+                    <div class="category-item" onclick="filterProduct('${cat.name}')">
+                        <img src="${cat.image}">
+                        <span>${cat.name}</span>
+                    </div>`;
+                
+                // সাইডবার আইটেম
+                sidebarHtml += `<a onclick="filterProduct('${cat.name}')"><i class="${cat.icon || 'fas fa-shopping-basket'}"></i> ${cat.name}</a>`;
+            });
+
+            gridHtml += `
+                <div class="category-item" onclick="filterProduct('all')">
+                    <img src="https://i.postimg.cc/g2swtMPr/1778585672894.png">
+                    <span>সব পণ্য</span>
+                </div>`;
+            
+            sidebarHtml += `<a href="bazar.html"><i class="fas fa-shopping-cart"></i> প্রয়োজনীয় বাজার</a>`;
+
+            grid.innerHTML = gridHtml;
+            sidebar.innerHTML = sidebarHtml;
+        } catch(e) { grid.innerHTML = "ক্যাটাগরি লোড ব্যর্থ"; }
     }
 
     async function loadQuickMenu() {
@@ -230,11 +271,11 @@
         try {
             const sRes = await fetch(serviceApi);
             const services = await sRes.json();
-            let html = '<div class="menu-divider">নিচের ক্যাটাগরিতে আপনার দক্ষতা অনুযায়ী আবেদন করুন </div>';
+            let html = '<div class="menu-divider"> Sajar BD পলিসি </div>';
             services.forEach(item => { html += `<a href="${item.link}" target="_blank"><i class="${item.icon}"></i> ${item.title}</a>`; });
-            html += '<div class="menu-divider">আপনার প্রয়োজন অনুযায়ী সেবা নিন</div>';
-            const extraCats = ['ইলেকট্রনিক সার্ভিস', 'টেকনিশিয়ান', 'স্বাস্থ্য সেবা', 'গাড়ি', 'অটো ডাইভার', 'প্রবাসী সেবা', 'অন্যান্য সেবা'];
-            const icons = ['fas fa-bolt', 'fa-solid fa-wrench', 'fas fa-user-md', 'fas fa-car', 'fas fa-shuttle-van', 'fas fa-plane-departure', 'fas fa-hand-holding-heart'];
+            html += '<div class="menu-divider">প্রয়োজন অনুযায়ী সেবা নিন</div>';
+            const extraCats = ['হেল্পলাইন'];
+            const icons = ['fas fa-hand-holding-heart'];
             extraCats.forEach((cat, i) => {
                 html += `<a onclick="loadSheet7Data('${cat}')"><i class="${icons[i]}"></i> ${cat}</a>`;
             });
@@ -278,7 +319,6 @@
         detailDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // পন্য বিবরণ মডাল ওপেন করার ফাংশন
     function showProductDetail(index) {
         const p = masterList[index];
         document.getElementById('modalTitle').innerText = "পণ্যের বিবরণ";
@@ -289,7 +329,7 @@
             </div>
             <h3 style="color:#333; margin:0 0 10px 0;">${p.name}</h3>
             <div style="background:#e8f5e9; color:#2e7d32; display:inline-block; padding:3px 10px; border-radius:20px; font-weight:bold; margin-bottom:10px;">মূল্য: ৳ ${p.price}</div>
-            <p style="font-size:14px; color:#555; line-height:1.6; white-space: pre-wrap; background:#f9f9f9; padding:10px; border-radius:8px;">${p.description || "এই পণ্যটির কোনো বিস্তারিত বিবরণ নেই।"}</p>
+            <p style="font-size:14px; color:#555; line-height:1.6; white-space: pre-wrap; background:#f9f9f9; padding:10px; border-radius:8px;">${p.description || "এই পণ্যটির বিস্তারিত বিবরণ নেই।"}</p>
             <button class="btn-order" onclick="closeInfoModal(); openOrder('${p.name}', '${p.price}', '${p.code || 'N/A'}')">এখনি অর্ডার করুন</button>
         `;
     }
@@ -344,12 +384,13 @@
     function filterProduct(cat) {
         closeAllMenus();
         if(!cat || cat === 'all') {
-            document.getElementById('banner-area').style.display = 'block';
             display(masterList);
         } else {
-            document.getElementById('banner-area').style.display = 'none';
-            display(masterList.filter(p => p.category === cat));
+            const filtered = masterList.filter(p => p.category === cat);
+            display(filtered);
         }
+        // ক্যাটাগরিতে ক্লিক করলে সরাসরি পণ্য সেকশনে নিয়ে যাবে
+        document.getElementById('productList').scrollIntoView({ behavior: 'smooth' });
     }
 
     function submitOrder() {
@@ -374,8 +415,8 @@
         };
         saveOrderToLocal(data);
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => { alert("অর্ডার সফল ভাবে গ্রহণ করা হয়েছে!"); closeOrder(); btn.innerText = "অর্ডার নিশ্চিত করুন"; btn.disabled = false; })
-        .catch(() => { alert("দুঃখিত, কোনো সমস্যা হয়েছে!"); btn.disabled = false; });
+        .then(() => { alert("অর্ডার সফল!"); closeOrder(); btn.innerText = "অর্ডার নিশ্চিত করুন"; btn.disabled = false; })
+        .catch(() => { alert("সমস্যা হয়েছে!"); btn.disabled = false; });
     }
 
     function saveOrderToLocal(order) {
