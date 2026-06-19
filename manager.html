@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Panel | Sajar BD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #2c3e50; color: white; padding-bottom: 90px; }
+        .mgr-header { background: #1a252f; padding: 30px; text-align: center; border-bottom: 4px solid #4CAF50; }
+        .container { padding: 15px; max-width: 600px; margin: auto; }
+        .order-box { background: white; color: #333; padding: 18px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 5px solid #4CAF50; }
+        .order-info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .customer-section { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-top: 10px; border: 1px dashed #ccc; }
+        .btn-mgr { background: #4CAF50; color: white; padding: 14px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .balance-card { background: #fff; color: #333; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .input-group { position: relative; width: 100%; margin-bottom: 10px; }
+        
+        /* ইনপুট ফিল্ড ও লেবেল স্টাইল গাইডলাইন অনুযায়ী সাজানো */
+        label { font-weight: bold; font-size: 13px; display: block; margin-bottom: 4px; color: #555; text-align: left; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; color: #333; margin-bottom: 12px; }
+        input[readonly] { background-color: #f0f0f0; cursor: not-allowed; color: #555; font-weight: bold; }
+        
+        .price-row { display: flex; gap: 10px; }
+        .price-row div { flex: 1; }
+
+        .pass-toggle { position: absolute; right: 12px; top: 12px; color: #666; cursor: pointer; z-index: 10; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1a252f; display: flex; justify-content: space-around; padding: 10px 0; border-top: 2px solid #4CAF50; z-index: 1000; }
+        .nav-item { color: white; text-decoration: none; text-align: center; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-item i { display: block; font-size: 20px; margin-bottom: 3px; }
+        #productModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; overflow-y: auto; }
+        .modal-content { background: white; color: #333; margin: 5% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 15px; position: relative; }
+        .warning-box { background: #e74c3c; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="mAuthView" class="container">
+    <div style="background:#34495e; padding:25px; border-radius:15px; margin-top: 50px;">
+        <h3 id="mTitle" style="text-align:center; color: white;">ম্যানেজার লগইন</h3>
+        <div id="signupFields" style="display:none;">
+            <input type="text" id="mName" placeholder="আপনার পূর্ণ নাম">
+            <input type="text" id="mRole" placeholder="আপনার প্রতিষ্ঠান">
+            <input type="text" id="mArea" placeholder="আপনার এরিয়া/ঠিকানা">
+        </div>
+        <input type="tel" id="mPhone" placeholder="মোবাইল নাম্বার">
+        <div class="input-group">
+            <input type="password" id="mPass" placeholder="পাসওয়ার্ড">
+            <i class="fas fa-eye pass-toggle" onclick="togglePass('mPass', this)"></i>
+        </div>
+        <div class="input-group" id="cPassGroup" style="display:none;">
+            <input type="password" id="mConfirmPass" placeholder="পাসওয়ার্ড নিশ্চিত করুন">
+            <i class="fas fa-eye pass-toggle" onclick="togglePass('mConfirmPass', this)"></i>
+        </div>
+        <button class="btn-mgr" onclick="handleMAuth()" id="mBtn" style="margin-top:10px;">লগইন</button>
+        <p onclick="toggleMSignup()" id="mToggle" style="text-align:center; cursor:pointer; font-size:14px; margin-top:20px; color: #4CAF50;">নতুন আবেদন করুন</p>
+    </div>
+</div>
+
+<div id="mPanelView" style="display:none;">
+    <div class="mgr-header">
+        <h2 id="dispMName" style="margin: 0;"></h2>
+        <span id="dispMId" style="background:#4CAF50; padding:2px 10px; border-radius:10px; font-size:12px;"></span>
+        <p id="dispMRole" style="margin: 8px 0 2px 0; font-size:14px; opacity:0.8;"></p>
+        <small id="dispMArea" style="color:#4CAF50; font-weight:bold;"></small>
+    </div>
+
+    <div class="container">
+        <div class="balance-card">
+            <div>
+                <small style="color: #666;">বর্তমান ব্যালেন্স</small>
+                <h2 id="dispMBalance" style="margin: 0; color: #4CAF50;">৳ 0.00</h2>
+            </div>
+            <i class="fas fa-wallet fa-2x" style="color: #4CAF50; opacity: 0.3;"></i>
+        </div>
+        <h4 style="border-left: 4px solid #4CAF50; padding-left: 10px;">অর্ডার লিস্ট</h4>
+        <div id="allOrdersList">অর্ডার লোড হচ্ছে...</div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i>হোম</a>
+        <a href="sales_point.html" class="nav-item"><i class="fas fa-shop"></i>অর্ডার দেখুন</a>
+        <div class="nav-item" onclick="openProductModal()"><i class="fas fa-cart-plus" style="color:#2196F3;"></i> পণ্য যুক্ত</div>
+        <div class="nav-item" onclick="window.scrollTo({top:0, behavior:'smooth'})"><i class="fas fa-arrow-up"></i> উপরে</div>
+        <div class="nav-item" onclick="logoutM()" style="color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> লগআউট</div>
+    </div>
+</div>
+
+<div id="productModal">
+    <div class="modal-content container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid #2196F3; padding-bottom: 8px;">
+            <h3 style="margin:0; color: #2196F3;"><i class="fas fa-plus-circle"></i> নতুন পণ্য যোগ করুন</h3>
+            <i class="fas fa-times" onclick="closeProductModal()" style="cursor:pointer; font-size:20px; color: #999;"></i>
+        </div>
+        
+        <form id="productForm">
+            <label><i class="fas fa-barcode"></i> পণ্য আইডি / কোড (ম্যানেজার আইডি)</label>
+            <input type="text" id="pCode" readonly required>
+
+            <label><i class="fas fa-shopping-bag"></i> পণ্যের নাম</label>
+            <input type="text" id="pName" placeholder="যেমন: খাঁটি সরিষার তেল ১ লিটার" required>
+
+            <label><i class="fas fa-tags"></i> ক্যাটাগরি নির্বাচন করুন</label>
+            <select id="pCategory" required>
+                <option value="">ক্যাটাগরি লোড হচ্ছে...</option>
+            </select>
+
+            <div class="price-row">
+                <div>
+                    <label><i class="fas fa-money-bill-wave"></i> বর্তমান মূল্য (৳)</label>
+                    <input type="text" id="pPrice" placeholder="যেমন: ২৫০" required>
+                </div>
+                <div>
+                    <label><i class="fas fa-tags"></i> পূর্বের মূল্য (৳)</label>
+                    <input type="text" id="pOldPrice" placeholder="যেমন: ৩০০ (ঐচ্ছিক)">
+                </div>
+            </div>
+
+            <label><i class="fas fa-truck"></i> পণ্যের ডেলিভারি চার্জ (৳)</label>
+            <input type="text" id="pDeliveryCharge" placeholder="যেমন: ৬০ (ফ্রি হলে ০ লিখুন)">
+
+            <label><i class="fas fa-image"></i> পণ্যের ছবির লিংক (PostImg / ImgBB URL)</label>
+            <input type="url" id="pImage" placeholder="https://i.postimg.cc/...">
+
+            <label><i class="fas fa-align-left"></i> বিস্তারিত বিবরণ</label>
+            <textarea id="pDesc" placeholder="পণ্যের গুণাগুণ ও বিস্তারিত লিখুন..."></textarea>
+            
+            <button type="submit" class="btn-mgr" id="pBtn" style="background:#2196F3; width: 100%;">আপনার পণ্য যুক্ত করুন</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // শিট স্ক্রিপ্ট কনফিগারেশন (অর্ডার ও অ্যাপ অথেনটিকেশন)
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwOXtHZ7nOeQVrh49harHKJbgZK8TymA9AeuXUpYoEeyVB78-pDqq6Xm7n18rR5Zn8d/exec";
+    
+    // সঠিক Firebase কনফিগারেশন (লাইভ প্রোডাক্ট ডাটাবেজ ইন্টিগ্রেশন)
+    const firebaseConfig = {
+        apiKey: "YOUR_NEW_RESTRICTED_API_KEY_HERE", // ⚠️ আপনার নতুন বা সিকিউরড API Key এখানে বসান
+        authDomain: "sajar-bd.firebaseapp.com",
+        databaseURL: "https://sajar-bd-default-rtdb.firebaseio.com",
+        projectId: "sajar-bd",
+        storageBucket: "sajar-bd.firebasestorage.app",
+        messagingSenderId: "280820304902",
+        appId: "1:280820304902:web:1e8ffd92cf7e39bb23c787",
+        measurementId: "G-H1DXD6758Z"
+    };
+
+    // Firebase ইনিশিয়ালাইজেশন
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let isSignupMode = false;
+
+    window.onload = function() {
+        checkManager();
+    };
+
+    function togglePass(id, icon) {
+        const field = document.getElementById(id);
+        field.type = field.type === "password" ? "text" : "password";
+        icon.classList.toggle("fa-eye");
+        icon.classList.toggle("fa-eye-slash");
+    }
+
+    function toggleMSignup() {
+        isSignupMode = !isSignupMode;
+        document.getElementById('signupFields').style.display = isSignupMode ? 'block' : 'none';
+        document.getElementById('cPassGroup').style.display = isSignupMode ? 'block' : 'none';
+        document.getElementById('mTitle').innerText = isSignupMode ? 'ম্যানেজার আবেদন' : 'ম্যানেজার লগইন';
+        document.getElementById('mBtn').innerText = isSignupMode ? 'আবেদন পাঠান' : 'লগইন';
+        document.getElementById('mToggle').innerText = isSignupMode ? 'লগইন করুন' : 'নতুন আবেদন করুন';
+    }
+
+    function formatPhone(ph) {
+        let p = ph.toString().trim();
+        if (p.length === 11 && p.startsWith('0')) return p;
+        if (p.length === 10 && !p.startsWith('0')) return '0' + p;
+        return p;
+    }
+
+    async function handleMAuth() {
+        let phone = formatPhone(document.getElementById('mPhone').value);
+        const pass = document.getElementById('mPass').value.trim();
+        const btn = document.getElementById('mBtn');
+        if(!phone || phone.length < 11) return alert("সঠিক মোবাইল নাম্বার দিন!");
+        if(!pass) return alert("পাসওয়ার্ড দিন!");
+        btn.innerText = "অপেক্ষা করুন...";
+        try {
+            const res = await fetch(scriptURL + "?type=mLogin");
+            const data = await res.json();
+            if(isSignupMode) {
+                const name = document.getElementById('mName').value;
+                const role = document.getElementById('mRole').value;
+                const area = document.getElementById('mArea').value;
+                if(!name || !role || !area) { btn.innerText="আবেদন পাঠান"; return alert("সব তথ্য দিন!"); }
+                const exists = data.find(x => formatPhone(x[1]) === phone);
+                if(exists) { btn.innerText="আবেদন পাঠান"; return alert("এই নাম্বারে আবেদন করা আছে!"); }
+                await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"mSignup", name, phone, password:pass, role, area}) });
+                alert("আবেদন জমা হয়েছে!"); location.reload();
+            } else {
+                const m = data.find(x => formatPhone(x[1]) === phone && x[2].toString().trim() === pass);
+                if(m) {
+                    localStorage.setItem('sajar_manager', JSON.stringify({name: m[0], phone: m[1], role: m[3], balance: m[4], area: m[5], id: m[6]}));
+                    checkManager();
+                } else { alert("ভুল তথ্য!"); btn.innerText = "লগইন"; }
+            }
+        } catch(e) { alert("সার্ভার ত্রুটি!"); btn.innerText = "লগইন"; }
+    }
+
+    function checkManager() {
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        if(m) {
+            document.getElementById('mAuthView').style.display = 'none';
+            document.getElementById('mPanelView').style.display = 'block';
+            document.getElementById('dispMName').innerText = m.name;
+            document.getElementById('dispMId').innerText = "ID: " + (m.id || "N/A");
+            document.getElementById('dispMRole').innerText = m.role;
+            document.getElementById('dispMArea').innerText = "এরিয়া: " + (m.area || "N/A");
+            
+            const balance = parseFloat(m.balance || 0);
+            document.getElementById('dispMBalance').innerText = "৳ " + balance.toFixed(2);
+
+            const bottomNav = document.querySelector('.bottom-nav');
+            const oldWithdraw = document.getElementById('withdrawBtn');
+            if(oldWithdraw) oldWithdraw.remove();
+
+            if (balance >= 500) {
+                const withdrawItem = document.createElement('div');
+                withdrawItem.className = 'nav-item';
+                withdrawItem.id = 'withdrawBtn';
+                withdrawItem.style.color = '#FF9800';
+                withdrawItem.innerHTML = '<i class="fas fa-money-check-alt"></i>উড্রো';
+                withdrawItem.onclick = function() {
+                    alert("আপনার বর্তমান ব্যালেন্স: ৳" + balance + "\nউইথড্র রিকোয়েস্ট অ্যাডমিনের কাছে পাঠানো হয়েছে।");
+                };
+                
+                const logoutBtn = bottomNav.querySelector('[onclick="logoutM()"]');
+                bottomNav.insertBefore(withdrawItem, logoutBtn);
+            }
+
+            loadAllOrders();
+            loadCategoriesIntoDropdown();
+        }
+    }
+
+    function loadCategoriesIntoDropdown() {
+        const selectNode = document.getElementById('pCategory');
+        db.ref('categories').on('value', (snapshot) => {
+            const data = snapshot.val();
+            let selectHtml = '<option value="">ক্যাটাগরি সিলেক্ট করুন</option>';
+            
+            if(data) {
+                Object.keys(data).forEach(key => {
+                    selectHtml += `<option value="${data[key].name}">${data[key].name}</option>`;
+                });
+            } else {
+                selectHtml = '<option value="">কোনো ক্যাটাগরি পাওয়া যায়নি</option>';
+            }
+            if(selectNode) selectNode.innerHTML = selectHtml;
+        });
+    }
+
+    function openProductModal() { 
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        if(m) {
+            document.getElementById('pCode').value = m.id || "N/A";
+            document.getElementById('productModal').style.display = 'block'; 
+        }
+    }
+    
+    function closeProductModal() { 
+        document.getElementById('productModal').style.display = 'none'; 
+    }
+
+    document.getElementById('productForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('pBtn');
+        btn.disabled = true;
+        btn.innerText = "আপলোড হচ্ছে...";
+
+        const productData = {
+            code: document.getElementById('pCode').value,
+            name: document.getElementById('pName').value,
+            category: document.getElementById('pCategory').value,
+            price: document.getElementById('pPrice').value,
+            oldPrice: document.getElementById('pOldPrice').value,
+            deliveryCharge: document.getElementById('pDeliveryCharge').value,
+            image: document.getElementById('pImage').value,
+            description: document.getElementById('pDesc').value
+        };
+
+        db.ref('products').push(productData)
+        .then(() => {
+            alert("✅ পণ্যটি সফলভাবে মূল ডাটাবেজে যুক্ত হয়েছে!");
+            document.getElementById('productForm').reset();
+            btn.disabled = false;
+            btn.innerText = "আপনার পণ্য যুক্ত করুন";
+            closeProductModal();
+        }).catch(err => {
+            alert("❌ আপলোড ব্যর্থ! ভুল: " + err.message);
+            btn.disabled = false;
+            btn.innerText = "আপনার পণ্য যুক্ত করুন";
+        });
+    });
+
+    async function loadAllOrders() {
+        const m = JSON.parse(localStorage.getItem('sajar_manager'));
+        if (parseFloat(m.balance || 0) < 500) {
+            document.getElementById('allOrdersList').innerHTML = `<div class="warning-box"><p>আপনার যে কোনো ধরনের পন্য বিক্রয় করুন </p></div>`;
+            return;
+        }
+        try {
+            const res = await fetch(scriptURL + "?type=getOrders");
+            const orders = await res.json();
+            document.getElementById('allOrdersList').innerHTML = orders.slice().reverse().map(ord => `
+                <div class="order-box">
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee;">
+                        <small>📅 ${ord.date}</small> <b>#${ord.row}</b>
+                    </div>
+                    <div class="order-info-row"><span>পণ্য:</span><b>${ord.product}</b></div>
+                    <div class="order-info-row"><span>পরিমাণ:</span><b>${ord.qty}টি | ৳ ${ord.total}</b></div>
+                    <div class="customer-section">
+                        <div class="order-info-row"><span>নাম:</span><span>${ord.customer}</span></div>
+                        <div class="order-info-row"><span>ফোন:</span><span>${ord.phone}</span></div>
+                        <div class="order-info-row"><span>ঠিকানা:</span><span>${ord.address}</span></div>
+                    </div>
+                    <select class="status-select" onchange="updateStatus(${ord.row}, this.value)">
+                        <option value="Pending" ${ord.status=='Pending'?'selected':''}>⏳ Pending</option>
+                        <option value="Delivered" ${ord.status=='Delivered'?'selected':''}>✅ Delivered</option>
+                    </select>
+                </div>
+            `).join('');
+        } catch(e) { document.getElementById('allOrdersList').innerHTML = "লোড ব্যর্থ!"; }
+    }
+
+    async function updateStatus(row, status) {
+        if(!confirm("স্ট্যাটাস পরিবর্তন করবেন?")) return;
+        await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({type:"updateStatus", row, status}) });
+        alert("আপডেট হয়েছে!");
+    }
+
+    function logoutM() { localStorage.removeItem('sajar_manager'); location.reload(); }
+</script>
+</body>
+</html>
