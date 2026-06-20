@@ -10,124 +10,300 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f4f4f4; padding-bottom: 80px; overflow-x: hidden; }
+        :root {
+            --primary-color: #2ece76;
+            --primary-dark: #1aa659;
+            --accent-color: #ff5722;
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg-color); 
+            padding-bottom: 90px; 
+            overflow-x: hidden; 
+            color: var(--text-main);
+        }
+
+        /* নতুন টপ অ্যাকশন বার (ছবির মতো হেডারের উপরে থাকবে) */
+        .header-top-bar {
+            background: #ffffff;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+        .top-action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .top-action-item i {
+            width: 32px;
+            height: 32px;
+            background: #e8fbf1;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .top-action-item:hover i {
+            background: var(--primary-color);
+            color: white;
+        }
+        .top-action-item span {
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+        .top-special-msg {
+            background: #e8fbf1;
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: auto; /* এটিকে বাম পাশে পুশ করবে */
+        }
         
         /* হেডার স্টাইল */
-        .top-nav { background: #4CAF50; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .top-nav { 
+            background: var(--card-bg); 
+            color: var(--text-main); 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
+        }
+        .top-nav i { font-size: 18px; color: var(--text-main); }
         .nav-logo-area { display: flex; align-items: center; flex-grow: 1; margin-left: 15px; }
-        .nav-logo-area img { height: 35px; width: auto; max-width: 120px; margin-right: 8px; border-radius: 4px; display: none; }
-        .nav-title { font-weight: bold; font-size: 18px; }
-        .nav-icons { display: flex; align-items: center; gap: 12px; }
+        .nav-logo-area img { height: 38px; width: auto; max-width: 120px; margin-right: 10px; border-radius: 8px; display: none; }
+        .nav-title { font-weight: 800; font-size: 14px; color: var(--primary-color); letter-spacing: 0.5px; }
+        .nav-icons { display: flex; align-items: center; gap: 15px; }
 
-        /* ক্যাটাগরি গ্রিড */
-        .category-section { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 10px; background: #fff; margin-bottom: 5px; border-bottom: 1px solid #eee; }
-        .category-item { text-align: center; cursor: pointer; transition: transform 0.2s; }
-        .category-item:active { transform: scale(0.9); }
-        .category-item img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #f0f7f0; padding: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .category-item span { font-size: 10px; font-weight: bold; color: #333; display: block; margin-top: 5px; line-height: 1.2; }
+        /* ডাইনামিক স্লাইডিং ব্যানার */
+        .slider-container {
+            margin: 15px;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            background: #e2e8f0;
+            height: 160px;
+        }
+        .slider-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .slider-dots {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            z-index: 5;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .dot.active {
+            background: white;
+            width: 20px;
+            border-radius: 4px;
+        }
 
-        /* কুইক মেনু */
-        .quick-menu { display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; padding: 15px 5px; margin-bottom: 5px; gap: 5px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); min-height: 70px; }
-        .quick-item { text-decoration: none; color: #333; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .quick-item i { width: 40px; height: 40px; background: #e8f5e9; color: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .quick-item span { font-size: 11px; font-weight: bold; white-space: nowrap; }
+        /* অ্যাপ ডাউনলোড বাটন স্টাইল */
+        .app-download-container {
+            margin: 5px 15px 10px 15px;
+            display: none;
+        }
+        .btn-app-download {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .btn-app-download:active { transform: scale(0.98); }
+        .btn-app-download i { color: #38bdf8; font-size: 16px; }
 
-        .service-text { font-size: 13px; background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 20px; cursor: pointer; font-weight: bold; white-space: nowrap; }
-
-        /* স্বাগতম মেসেজ */
-        .welcome-msg { background: #e8f5e9; color: #2e7d32; padding: 12px; margin: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; border-left: 5px solid #4CAF50; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        /* ক্যাটাগরি সেকশন */
+        .section-title { font-size: 16px; font-weight: 700; padding: 10px 15px 0; margin-bottom: -5px; color: var(--text-main); }
+        .category-section { 
+            display: flex; 
+            gap: 15px; 
+            padding: 15px; 
+            overflow-x: auto; 
+            background: transparent; 
+            scrollbar-width: none;
+        }
+        .category-section::-webkit-scrollbar { display: none; }
+        .category-item { text-align: center; cursor: pointer; flex: 0 0 75px; }
+        .category-item img { 
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            background: var(--card-bg); 
+            padding: 2px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.06); 
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .category-item:hover img { border-color: var(--primary-color); transform: translateY(-2px); }
+        .category-item span { font-size: 11px; font-weight: 600; color: var(--text-main); display: block; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* সাইডবার */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #fff; z-index: 2000; transition: 0.3s; box-shadow: 2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .sidebar { position: fixed; top: 0; left: -290px; width: 290px; height: 100%; background: #fff; z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 4px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
         .sidebar.active { left: 0; }
-        .sidebar-right { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #fff; z-index: 2000; transition: 0.3s; box-shadow: -2px 0 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; }
+        .sidebar-right { position: fixed; top: 0; right: -290px; width: 290px; height: 100%; background: #fff; z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -4px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; }
         .sidebar-right.active { right: 0; }
         
-        .sidebar-header { background: #4CAF50; padding: 25px 20px; color: white; text-align: center; flex-shrink: 0; }
+        .sidebar-header { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); padding: 35px 20px; color: white; text-align: center; flex-shrink: 0; font-weight: bold; font-size: 16px; }
         .sidebar-menu { flex-grow: 1; overflow-y: auto; padding-bottom: 20px; }
-        .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; text-decoration: none; color: #333; border-bottom: 1px solid #f1f1f1; cursor: pointer; font-size: 14px; }
-        .sidebar-menu i { width: 30px; color: #4CAF50; font-size: 16px; }
-        .menu-divider { background: #f8f8f8; padding: 10px 20px; font-size: 11px; font-weight: bold; color: #666; text-transform: uppercase; border-bottom: 1px solid #eee; }
+        .sidebar-menu a { display: flex; align-items: center; padding: 14px 20px; text-decoration: none; color: var(--text-main); border-bottom: 1px solid #f7f9fc; cursor: pointer; font-size: 14px; font-weight: 500; transition: 0.2s; }
+        .sidebar-menu a:hover { background: #e8fbf1; color: var(--primary-dark); }
+        .sidebar-menu i { width: 30px; color: var(--primary-color); font-size: 18px; }
+        .menu-divider { background: #f7f9fc; padding: 10px 20px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* পণ্য কার্ড */
-        .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }
-        .card { background: #fff; border-radius: 10px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; display: flex; flex-direction: column; position: relative; }
-        .card-code { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; font-size: 9px; padding: 2px 6px; border-radius: 4px; }
-        .card img { width: 100%; height: 130px; border-radius: 8px; object-fit: cover; cursor: pointer; }
-        .card h4 { margin: 8px 0 2px; font-size: 14px; color: #333; height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-        .card .desc { font-size: 11px; color: #777; margin-bottom: 8px; height: 30px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 15px; cursor: pointer; }
+        /* পণ্য কার্ড গ্রিড */
+        .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 15px; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); text-align: center; border: 1px solid rgba(0,0,0,0.02); display: flex; flex-direction: column; position: relative; transition: transform 0.3s, box-shadow 0.3s; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
+        .card-code { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 600; z-index: 2; }
+        .card .badge { position: absolute; top: 8px; right: 8px; background: var(--accent-color); color: white; font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: bold; z-index: 2; text-transform: uppercase; }
         
-        .price-container { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
-        .card .price { color: #4CAF50; font-weight: bold; font-size: 15px; }
-        .card .old-price { color: #999; text-decoration: line-through; font-size: 12px; }
+        .card img { width: 100%; height: 140px; border-radius: 12px; object-fit: cover; cursor: pointer; transition: transform 0.5s; }
+        .card h4 { margin: 10px 0 4px; font-size: 14px; color: var(--text-main); font-weight: 700; height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .card .desc { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; height: 30px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 15px; cursor: pointer; text-align: left; }
+        
+        .price-container { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: auto; margin-bottom: 10px; flex-wrap: wrap; }
+        .card .price { color: var(--primary-dark); font-weight: 800; font-size: 16px; }
+        .card .old-price { color: var(--text-muted); text-decoration: line-through; font-size: 12px; }
 
-        .btn-order { background: #4CAF50; color: white; border: none; width: 100%; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-order { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; border: none; width: 100%; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(46, 206, 118, 0.2); transition: all 0.2s; }
+        .btn-order:active { transform: scale(0.97); }
 
         /* লোড মোর বাটন */
-        .load-more-container { text-align: center; margin: 20px 0; }
-        .btn-load-more { background: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background 0.2s; }
-        .btn-load-more:hover { background: #388E3C; }
+        .load-more-container { text-align: center; margin: 25px 0; }
+        .btn-load-more { background: white; color: var(--primary-dark); border: 2px solid var(--primary-color); padding: 10px 28px; font-size: 14px; font-weight: 700; border-radius: 30px; cursor: pointer; transition: all 0.3s; }
+        .btn-load-more:hover { background: var(--primary-color); color: white; }
 
         /* ডার্ক ফুটার সেকশন */
-        .site-footer { background: #131921; color: #eaeded; padding: 30px 20px 20px; font-size: 14px; margin-top: 30px; }
-        .footer-content { display: flex; flex-direction: column; gap: 25px; max-width: 600px; margin: 0 auto; }
-        .footer-logo-desc img { max-height: 45px; background: white; padding: 5px; border-radius: 4px; margin-bottom: 15px; }
-        .footer-desc { color: #a6a6a6; font-size: 13px; line-height: 1.6; text-align: justify; margin: 0; }
-        .footer-contact h3 { color: #fff; font-size: 16px; margin: 0 0 15px 0; font-weight: 600; }
-        .footer-contact-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; color: #eaeded; text-decoration: none; font-size: 13px; }
-        .footer-contact-item i { color: #eaeded; margin-top: 3px; width: 15px; text-align: center; }
+        .site-footer { background: #11161e; color: #eaeded; padding: 40px 20px 20px; font-size: 14px; margin-top: 40px; border-top-left-radius: 24px; border-top-right-radius: 24px; }
+        .footer-content { display: flex; flex-direction: column; gap: 30px; max-width: 600px; margin: 0 auto; }
+        .footer-logo-desc img { max-height: 45px; background: white; padding: 6px; border-radius: 8px; margin-bottom: 15px; }
+        .footer-desc { color: #9aa4b2; font-size: 13px; line-height: 1.6; text-align: justify; margin: 0; }
+        .footer-contact h3 { color: #fff; font-size: 16px; margin: 0 0 15px 0; font-weight: 700; }
+        .footer-contact-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; color: #eaeded; text-decoration: none; font-size: 13px; }
+        .footer-contact-item i { color: var(--primary-color); margin-top: 3px; font-size: 14px; }
         .footer-socials { display: flex; gap: 15px; margin-top: 15px; }
-        .footer-socials a { color: #4CAF50; font-size: 22px; text-decoration: none; transition: color 0.2s; display: none; }
-        .footer-socials a:hover { color: #81C784; }
-        .footer-divider { border: 0; height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0; }
-        .footer-bottom { text-align: center; font-size: 12px; color: #a6a6a6; }
-        .footer-links { margin-top: 5px; }
-        .footer-links a { color: #4CAF50; text-decoration: none; margin: 0 5px; }
-        .footer-links a:hover { text-decoration: underline; }
+        .footer-socials a { color: var(--primary-color); font-size: 24px; text-decoration: none; display: none; }
+        
+        .footer-divider { border: 0; height: 1px; background: rgba(255,255,255,0.08); margin: 25px 0; }
+        .footer-bottom { text-align: center; font-size: 12px; color: #718096; }
+        .footer-links { margin-top: 8px; }
+        .footer-links a { color: var(--primary-color); text-decoration: none; margin: 0 8px; font-weight: 600; }
 
-        /* মডাল */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; }
-        .modal-box { background: #fff; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; box-sizing: border-box; max-height: 90vh; overflow-y: auto; position: relative; }
+        /* মডাল এবং ওভারলে */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-box { background: #fff; width: 92%; max-width: 420px; border-radius: 20px; padding: 24px; box-sizing: border-box; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+
+        /* অর্ডার ফরম উপাদানসমূহ */
+        .modal-box label { font-size: 12px; font-weight: 700; color: var(--text-main); display: block; margin-bottom: 5px; }
+        .modal-box input[type="text"], .modal-box input[type="number"], .modal-box input[type="tel"], .modal-box textarea {
+            width: 100%; padding: 11px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box; background: #f8fafc; font-family: inherit; transition: all 0.3s;
+        }
+        .modal-box input:focus, .modal-box textarea:focus { border-color: var(--primary-color); background: #fff; outline: none; }
 
         /* ডেলিভারি ফিল্টার স্টাইল */
-        .delivery-filter-box { background: #f0f7f0; border: 1px dashed #4CAF50; border-radius: 8px; padding: 10px; margin-bottom: 12px; display: flex; justify-content: space-around; align-items: center; }
-        .delivery-radio-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: bold; color: #2e7d32; cursor: pointer; }
-        .delivery-radio-label input[type="radio"] { accent-color: #4CAF50; width: 16px; height: 16px; margin: 0; }
+        .delivery-filter-box { background: #f0fbf5; border: 1px dashed var(--primary-color); border-radius: 12px; padding: 12px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .delivery-radio-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--primary-dark); cursor: pointer; }
+        .delivery-radio-label input[type="radio"] { accent-color: var(--primary-color); width: 18px; height: 18px; margin: 0; }
 
         /* অর্ডার বিলিং টেবিল স্টাইল */
-        .billing-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 12px; background: #f9f9f9; border-radius: 8px; overflow: hidden; font-size: 13px; border: 1px solid #eee; }
-        .billing-table td { padding: 8px 12px; color: #444; }
-        .billing-table tr:not(:last-child) { border-bottom: 1px solid #eee; }
-        .billing-table .total-row { background: #e8f5e9; font-weight: bold; color: #2e7d32; font-size: 14px; }
+        .billing-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px; background: #f8fafc; border-radius: 12px; overflow: hidden; font-size: 13px; }
+        .billing-table td { padding: 10px 14px; color: var(--text-main); }
+        .billing-table tr:not(:last-child) { border-bottom: 1px solid #edf2f7; }
+        .billing-table .total-row { background: #e8fbf1; font-weight: 800; color: var(--primary-dark); font-size: 15px; }
 
         /* পেমেন্ট মেথড বক্স */
-        .payment-box { background: #fff8e1; border: 1px solid #ffe082; padding: 10px 12px; border-radius: 6px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: #b78103; font-size: 13px; font-weight: bold; }
-        .payment-box i { font-size: 16px; color: #ffb300; }
+        .payment-box { background: #fffaf0; border: 1px solid #feebc8; padding: 12px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: #c05621; font-size: 13px; font-weight: 700; }
+        .payment-box i { font-size: 18px; color: #dd6b20; }
 
         /* বটম নেভিগেশন */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; text-align: center; }
-        .bottom-nav a { text-decoration: none; color: #555; font-size: 10px; cursor: pointer;}
-        .bottom-nav i { font-size: 18px; display: block; margin-bottom: 2px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255, 255, 255, 0.95); display: grid; grid-template-columns: repeat(5, 1fr); padding: 12px 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); z-index: 1000; text-align: center; backdrop-filter: blur(10px); border-top-left-radius: 16px; border-top-right-radius: 16px; }
+        .bottom-nav a { text-decoration: none; color: var(--text-muted); font-size: 11px; font-weight: 700; cursor: pointer; transition: color 0.2s; }
+        .bottom-nav i { font-size: 20px; display: block; margin-bottom: 4px; color: var(--text-muted); }
+        .bottom-nav a.active-nav, .bottom-nav a:hover, .bottom-nav a:hover i { color: var(--primary-color) !important; }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; z-index: 1500; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
 
-        .service-info-card { background: #f9f9f9; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #4CAF50; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .service-info-card b { color: #333; font-size: 15px; }
-        .service-info-card .phone { color: #4CAF50; font-weight: bold; margin: 4px 0; display: block; text-decoration: none; }
+        .service-info-card { background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid var(--primary-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .service-info-card b { color: var(--text-main); font-size: 15px; }
+        .service-info-card .phone { color: var(--primary-dark); font-weight: 700; margin: 6px 0; display: block; text-decoration: none; }
         
-        .history-card { border: 1px solid #eee; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; background: #fff; }
-        .history-card span { display: block; color: #666; }
+        .history-card { border: 1px solid #edf2f7; padding: 12px; border-radius: 12px; margin-bottom: 10px; font-size: 12px; background: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.01); }
+        .history-card span { display: block; color: var(--text-muted); margin-top: 2px; }
     </style>
 </head>
 <body>
 
+<div class="header-top-bar">
+    <span class="top-special-msg" onclick="openInfoModal()">বিশেষ বার্তা</span>
+    <div id="topActionBarArea" style="display: flex; gap: 12px;"></div>
+</div>
+
 <div class="overlay" id="overlay" onclick="closeAllMenus()"></div>
 
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header"><i class="fas fa-user-circle fa-3x"></i><br>মেনু অপশন</div>
+    <div class="sidebar-header"><i class="fas fa-user-circle fa-3x"></i><br><br>মেনু অপশন</div>
     <div class="sidebar-menu" id="leftSidebarMenu">
         <div class="menu-divider">আমার একাউন্ট</div>
-                <a href="manager.html"><i class="fas fa-user-tie"></i> মার্কেটিং ম্যানেজার</a>
+        <a href="manager.html"><i class="fas fa-user-tie"></i> মার্কেটিং ম্যানেজার</a>
         <a href="profile.html"><i class="fas fa-user"></i> কাস্টমার প্রোফাইল</a>
         <div class="menu-divider">অন্যান্য</div>
         <a href="bazar.html"><i class="fas fa-shopping-cart"></i> প্রয়োজনীয় বাজার</a>
@@ -135,30 +311,36 @@
 </div>
 
 <div class="sidebar-right" id="sidebarRight">
-    <div class="sidebar-header"><i class="fas fa-th-large fa-3x"></i><br>MLN POINTS</div>
+    <div class="sidebar-header"><i class="fas fa-th-large fa-3x"></i><br><br>MLN POINTS</div>
     <div class="sidebar-menu" id="rightMenuContent"></div>
 </div>
 
 <div class="top-nav">
     <i class="fas fa-bars" onclick="toggleLeftMenu()" style="cursor:pointer"></i>
     <div class="nav-logo-area">
-        <img id="header-logo" src="" alt="Logo">
-        <span class="nav-title">Sajar BD</span>
+        <img id="header-logo" src="https://i.postimg.cc/g2swtMPr/1778585672894.png" alt="Logo">
+        <span class="nav-title">সময় বাচান খরচ কমান</span>
     </div>
     <div class="nav-icons">
-        <span class="service-text" onclick="openInfoModal()">আমাদের সেবা</span>
         <i class="fas fa-ellipsis-v" onclick="toggleRightMenu()" style="cursor:pointer; padding-right: 5px;"></i>
     </div>
 </div>
 
-<div class="quick-menu" id="quickMenuArea"></div>
-
-<div class="category-section" id="categoryGrid">ক্যাটাগরি লোড হচ্ছে...</div>
-
-<div class="welcome-msg">
-    <i class="fas fa-shopping-bag"></i> খুব সহজে ঘরে বসে কেনাকাটা করুন।
+<div class="slider-container">
+    <div class="slider-wrapper" id="sliderWrapper"></div>
+    <div class="slider-dots" id="sliderDots"></div>
 </div>
 
+<div class="app-download-container" id="appDownloadArea">
+    <a href="#" id="btn-app-link" target="_blank" class="btn-app-download">
+        <i class="fa fa-download"></i> অ্যাপ ডাউনলোড করুন
+    </a>
+</div>
+
+<div class="section-title">পণ্য ক্যাটাগরি</div>
+<div class="category-section" id="categoryGrid">ক্যাটাগরি লোড হচ্ছে...</div>
+
+<div class="section-title" style="margin-top: 10px;">আমাদের পণ্যসমূহ</div>
 <div class="products" id="productList">পণ্য লোড হচ্ছে...</div>
 
 <div class="load-more-container" id="loadMoreContainer" style="display: none;">
@@ -204,42 +386,42 @@
 
 <div id="infoModal" class="modal">
     <div class="modal-box">
-        <h3 id="modalTitle" style="color:#4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px;">তথ্য</h3>
+        <h3 id="modalTitle" style="color:var(--primary-dark); border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; margin-top:0;">তথ্য</h3>
         <div id="infoContent">তথ্য লোড হচ্ছে...</div>
-        <button onclick="closeInfoModal()" style="background:#4CAF50; color:white; border:none; width:100%; padding:10px; border-radius:5px; margin-top:15px; cursor:pointer;">বন্ধ করুন</button>
+        <button onclick="closeInfoModal()" style="background:var(--primary-color); color:white; border:none; width:100%; padding:12px; border-radius:10px; margin-top:20px; cursor:pointer; font-weight:bold;">বন্ধ করুন</button>
     </div>
 </div>
 
 <div id="orderModal" class="modal">
     <div class="order-box modal-box">
-        <h3 style="color:#4CAF50; text-align: center; margin-top:0;">অর্ডার ফরম</h3>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <div style="flex:1"><label style="font-size:11px; font-weight:bold;">তারিখ</label>
-            <input type="text" id="orderDate" readonly style="background:#f0f0f0; width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; font-size:13px; box-sizing:border-box;"></div>
-            <div style="flex:1"><label style="font-size:11px; font-weight:bold;">পণ্য কোড</label>
-            <input type="text" id="orderPCode" readonly style="background:#fff3e0; width:100%; padding:8px; border:1px solid #ffe0b2; border-radius:5px; color:#e65100; font-weight:bold; font-size:13px; box-sizing:border-box;"></div>
+        <h3 style="color:var(--primary-dark); text-align: center; margin-top:0; font-weight:800; font-size:18px;">অর্ডার ফরম</h3>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1"><label>তারিখ</label>
+            <input type="text" id="orderDate" readonly style="background:#f1f5f9;"></div>
+            <div style="flex:1"><label>পণ্য কোড</label>
+            <input type="text" id="orderPCode" readonly style="background:#fffaf0; color:#dd6b20; font-weight:bold;"></div>
         </div>
         
-        <label style="font-size:11px; font-weight:bold;">পণ্য নাম</label>
-        <input type="text" id="orderPName" readonly style="background:#f0f0f0; width:100%; padding:8px; margin-bottom:10px; border:1px solid #ddd; border-radius:5px; font-size:13px; box-sizing:border-box;">
+        <label>পণ্য নাম</label>
+        <input type="text" id="orderPName" readonly style="background:#f1f5f9; font-weight:600;">
         
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <div style="flex:1"><label style="font-size:11px; font-weight:bold;">একক মূল্য</label><input type="text" id="orderPrice" readonly style="background:#f0f0f0; width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;"></div>
-            <div style="flex:1"><label style="font-size:11px; font-weight:bold;">পরিমাণ</label><input type="number" id="orderQty" value="1" min="1" oninput="calculateTotal()" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;"></div>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1"><label>একক মূল্য</label><input type="text" id="orderPrice" readonly style="background:#f1f5f9; font-weight:600;"></div>
+            <div style="flex:1"><label>পরিমাণ</label><input type="number" id="orderQty" value="1" min="1" oninput="calculateTotal()"></div>
         </div>
         
-        <label style="font-size:11px; font-weight:bold;">বিবরণ (সাইজ/কালার)</label>
-        <textarea id="orderDesc" style="width:100%; padding:8px; height:45px; border:1px solid #ddd; border-radius:5px; margin-bottom:10px; box-sizing:border-box; font-family: inherit;"></textarea>
+        <label>বিবরণ (সাইজ/কালার)</label>
+        <textarea id="orderDesc" style="height:55px;"></textarea>
         
-        <label style="font-size:11px; font-weight:bold; display:block; margin-bottom:5px;">ডেলিভারি এলাকা নির্বাচন করুন(পন্য অনুযায়ী ডেলিভারি চার্জ কম বেশি হতে পারে পন্য ডেলিভারির সময় হিসাব মিলিয়ে নিবেন)</label>
+        <label style="line-height:1.4; margin-bottom:8px;">ডেলিভারি এলাকা (পণ্য অনুযায়ী ডেলিভারি চার্জ কম বেশি হবে ডেলিভারির সময় হিসাব মিলিয়ে নিবেন)</label>
         <div class="delivery-filter-box">
             <label class="delivery-radio-label">
                 <input type="radio" name="deliveryLoc" value="inside" checked onchange="calculateTotal()">
-                <span>চিতোষী আশেপাশে এলাকা (৳৩০)</span>
+                <span>শাহরাস্তি, লাকসাম, মনোহরগঞ্জ সহ আশেপাশের এলাকা(৳৬০)</span>
             </label>
             <label class="delivery-radio-label">
                 <input type="radio" name="deliveryLoc" value="outside" onchange="calculateTotal()">
-                <span>চিতোষীর বাহিরের এলাকায় (৳৬০)</span>
+                <span>সারা দেশে ডেলিভারি চার্জ (৳১৪৫)</span>
             </label>
         </div>
 
@@ -250,7 +432,7 @@
             </tr>
             <tr>
                 <td>Delivery Charge (ডেলিভারি)</td>
-                <td style="text-align: right;" id="displayDelivery">৳ ৩০</td>
+                <td style="text-align: right;" id="displayDelivery">৳  ৬০</td>
             </tr>
             <tr>
                 <td>Tax / VAT (ট্যাক্স ০%)</td>
@@ -264,23 +446,23 @@
 
         <div class="payment-box">
             <i class="fas fa-money-bill-wave"></i>
-            <span>পেমেন্ট পদ্ধতি: ক্যাশ অন ডেলিভারি (পণ্য হাতে পেয়ে টাকা দেবেন)</span>
+            <span>পেমেন্ট পদ্ধতি: ক্যাশ অন ডেলিভারি</span>
         </div>
         
-        <label style="font-size:12px; font-weight:bold;">আপনার নাম</label>
-        <input type="text" id="custName" placeholder="আপনার নাম" style="width:100%; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;">
-        <label style="font-size:12px; font-weight:bold;">মোবাইল নাম্বার</label>
-        <input type="tel" id="custPhone" placeholder="০১৮XXXXXXXX" style="width:100%; padding:10px; margin-bottom:8px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box;">
-        <label style="font-size:12px; font-weight:bold;">ঠিকানা</label>
-        <textarea id="custAddress" placeholder="গ্রাম, থানা, জেলা" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:5px; box-sizing:border-box; font-family: inherit; margin-bottom:15px;"></textarea>
+        <label>আপনার নাম</label>
+        <input type="text" id="custName" placeholder="আপনার নাম">
+        <label>মোবাইল নাম্বার</label>
+        <input type="tel" id="custPhone" placeholder="০১৮XXXXXXXX">
+        <label>ঠিকানা</label>
+        <textarea id="custAddress" placeholder="গ্রাম, থানা, জেলা" style="height:60px; margin-bottom:15px;"></textarea>
         
         <button class="btn-order" id="confirmBtn" onclick="submitOrder()">অর্ডার নিশ্চিত করুন</button>
-        <button onclick="closeOrder()" style="background:none; border:none; color:gray; width:100%; margin-top:10px; cursor:pointer;">বাতিল</button>
+        <button onclick="closeOrder()" style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:12px; cursor:pointer; font-weight:600; font-size:13px;">বাতিল করুন</button>
     </div>
 </div>
 
 <div class="bottom-nav">
-    <a href="index.html" style="color:#4CAF50;"><i class="fas fa-home"></i>হোম</a>
+    <a href="index.html" class="active-nav"><i class="fas fa-home"></i>হোম</a>
     <a href="bazar.html"><i class="fas fa-shopping-basket"></i>ডেলি বাজার</a>
     <a onclick="showOrderHistory()"><i class="fas fa-receipt"></i>অর্ডার দেখুন</a>
     <a href="profile.html"><i class="fas fa-user"></i>প্রোফাইল</a>
@@ -289,15 +471,15 @@
 
 <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyBrdumcuWPCJDl-iX3Vk-XRjEORBhZFcFs",
-      authDomain: "sajar-bd.firebaseapp.com",
-      databaseURL: "https://sajar-bd-default-rtdb.firebaseio.com",
-      projectId: "sajar-bd",
-      storageBucket: "sajar-bd.firebasestorage.app",
-      messagingSenderId: "280820304902",
-      appId: "1:280820304902:web:1e8ffd92cf7e39bb23c787",
-      measurementId: "G-H1DXD6758Z"
-    };
+  apiKey: "AIzaSyC_YDqti9rqo4VzCWLJC71w6tTxxdiEWHk",
+  authDomain: "products-7c8d2.firebaseapp.com",
+  projectId: "products-7c8d2",
+  storageBucket: "products-7c8d2.firebasestorage.app",
+  messagingSenderId: "832099230794",
+  appId: "1:832099230794:web:91fdad2b2025fadc56f2b3",
+  measurementId: "G-FZJNZ9MZSH"
+};
+
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -313,20 +495,22 @@
     let filteredList = []; 
     let currentUnitPrice = 0;
     
-    const chargeInside = 30; 
-    const chargeOutside = 60; 
+    const chargeInside = 60; 
+    const chargeOutside = 145; 
     const taxRate = 0; 
 
     let calculatedSubTotal = 0;
     let calculatedTax = 0;
     let calculatedTotal = 0;
-    let activeDeliveryCost = 30;
+    let activeDeliveryCost = 60;
     let selectedLocationText = "Inside Dhaka";
 
     const itemsPerPage = 20;
     let currentPage = 1;
 
-    // DOM Caching for Performance Optimization
+    let currentSlide = 0;
+    let slideCount = 0;
+
     const sidebarEl = document.getElementById('sidebar');
     const sidebarRightEl = document.getElementById('sidebarRight');
     const overlayEl = document.getElementById('overlay');
@@ -346,44 +530,105 @@
         loadServiceMenu();
         loadFirebaseCategories();
         loadFirebaseProducts();
+        loadDynamicBanners();
+    }
+
+    async function loadDynamicBanners() {
+        const wrapper = document.getElementById('sliderWrapper');
+        const dotsContainer = document.getElementById('sliderDots');
         
         try {
             const bRes = await fetch(bannerApi);
             const banners = await bRes.json();
-            if(banners[0] && banners[0].logo){
-                const logoImg = document.getElementById('header-logo');
-                logoImg.src = banners[0].logo; logoImg.style.display = 'block';
-                
-                const footerLogoImg = document.getElementById('footer-logo');
-                if(footerLogoImg) footerLogoImg.src = banners[0].logo;
+            
+            if(banners && banners[0]) {
+                if(banners[0].logo){
+                    const logoImg = document.getElementById('header-logo');
+                    logoImg.src = banners[0].logo; logoImg.style.display = 'block';
+                    
+                    const footerLogoImg = document.getElementById('footer-logo');
+                    if(footerLogoImg) footerLogoImg.src = banners[0].logo;
+                }
+
+                if(banners[0].app_link && banners[0].app_link.trim() !== "") {
+                    const appArea = document.getElementById('appDownloadArea');
+                    const appLinkBtn = document.getElementById('btn-app-link');
+                    if(appArea && appLinkBtn) {
+                        appLinkBtn.href = banners[0].app_link;
+                        appArea.style.display = 'block';
+                    }
+                }
+
+                let slideImages = [];
+                if(banners[0].banner1) slideImages.push(banners[0].banner1);
+                if(banners[0].banner2) slideImages.push(banners[0].banner2);
+                if(banners[0].banner3) slideImages.push(banners[0].banner3);
+
+                if(slideImages.length === 0) {
+                    banners.slice(0, 3).forEach(b => {
+                        if(b.image || b.banner) slideImages.push(b.image || b.banner);
+                    });
+                }
+
+                if(slideImages.length > 0) {
+                    slideCount = slideImages.length;
+                    let wrapperHtml = "";
+                    let dotsHtml = "";
+
+                    slideImages.forEach((imgUrl, index) => {
+                        wrapperHtml += `<div class="slide"><img src="${imgUrl}" alt="Banner ${index+1}"></div>`;
+                        dotsHtml += `<div class="dot ${index === 0 ? 'active' : ''}"></div>`;
+                    });
+
+                    wrapper.innerHTML = wrapperHtml;
+                    dotsContainer.innerHTML = dotsHtml;
+
+                    startBannerSlider();
+                } else {
+                    wrapper.innerHTML = `<div class="slide" style="background:linear-gradient(135deg, var(--primary-color), var(--primary-dark)); display:flex; flex-direction:column; justify-content:center; padding:20px; color:white;"><h2>Sajar BD অনলাইন শপিং</h2><p>সেরা মূল্যে আকর্ষণীয় পণ্য লুফে নিন এখনই!</p></div>`;
+                }
             }
-        } catch(e) { console.error("Banner load error"); }
+        } catch(e) { 
+            console.error("Banner slider/app link load error", e); 
+        }
+    }
+
+    function startBannerSlider() {
+        const wrapper = document.getElementById('sliderWrapper');
+        const dots = document.querySelectorAll('.dot');
+
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slideCount;
+            wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            dots.forEach((dot, idx) => {
+                if(idx === currentSlide) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+        }, 3000);
     }
 
     function loadFirebaseCategories() {
         const grid = document.getElementById('categoryGrid');
         db.ref('categories').on('value', (snapshot) => {
             const data = snapshot.val();
-            if (!data) {
-                grid.innerHTML = "কোনো ক্যাটাগরি পাওয়া যায়নি।";
-                return;
-            }
-
-            let gridHtml = "";
-            Object.keys(data).forEach(key => {
-                const cat = data[key];
-                gridHtml += `
-                    <div class="category-item" onclick="filterProduct('${cat.name}')">
-                        <img src="${cat.image}">
-                        <span>${cat.name}</span>
-                    </div>`;
-            });
-
-            gridHtml += `
+            
+            let gridHtml = `
                 <div class="category-item" onclick="filterProduct('all')">
                     <img src="https://i.postimg.cc/g2swtMPr/1778585672894.png">
                     <span>সব পণ্য</span>
                 </div>`;
+
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const cat = data[key];
+                    gridHtml += `
+                        <div class="category-item" onclick="filterProduct('${cat.name}')">
+                            <img src="${cat.image}">
+                            <span>${cat.name}</span>
+                        </div>`;
+                });
+            }
             
             grid.innerHTML = gridHtml;
         }, (error) => {
@@ -423,8 +668,10 @@
             const p = currentItems[index];
             let pCode = p.code || 'N/A';
             let oldPriceHtml = p.oldPrice ? `<div class="old-price">৳ ${p.oldPrice}</div>` : '';
+            let badgeHtml = p.oldPrice ? `<span class="badge">অফার</span>` : '';
 
             html += `<div class="card">
+                        ${badgeHtml}
                         <span class="card-code">আইডি: ${pCode}</span>
                         <img src="${p.image}" onclick="showProductDetail(${index})">
                         <h4 onclick="showProductDetail(${index})">${p.name}</h4>
@@ -433,7 +680,7 @@
                             ${oldPriceHtml}
                             <div class="price">৳ ${p.price}</div>
                         </div>
-                        <button class="btn-order" onclick="openOrder('${p.name}', '${p.price}', '${pCode}')">অর্ডার দিন</button>
+                        <button class="btn-order" onclick="openOrder('${p.name}', '${p.price}', '${pCode}')">🛒অর্ডার করুন</button>
                     </div>`;
         }
         
@@ -463,24 +710,25 @@
         modalTitleEl.innerText = "পণ্যের বিবরণ";
         infoModalEl.style.display = 'flex';
         
-        let oldPriceDetailHtml = p.oldPrice ? `<span style="color:#999; text-decoration:line-through; font-size:14px; margin-right:8px;">আগের মূল্য: ৳ ${p.oldPrice}</span>` : '';
+        let oldPriceDetailHtml = p.oldPrice ? `<span style="color:var(--text-muted); text-decoration:line-through; font-size:14px; margin-right:8px;">আগের মূল্য: ৳ ${p.oldPrice}</span>` : '';
 
         infoContentEl.innerHTML = `
             <div style="text-align:center;">
-                <img src="${p.image}" style="width:100%; max-height:250px; object-fit:contain; border-radius:10px; margin-bottom:15px; border:1px solid #eee;">
+                <img src="${p.image}" style="width:100%; max-height:250px; object-fit:contain; border-radius:14px; margin-bottom:15px; border:1px solid #edf2f7;">
             </div>
-            <h3 style="color:#333; margin:0 0 10px 0;">${p.name}</h3>
-            <div style="background:#e8f5e9; color:#2e7d32; display:inline-block; padding:5px 12px; border-radius:20px; font-weight:bold; margin-bottom:10px;">
+            <h3 style="color:var(--text-main); margin:0 0 10px 0; font-weight:700;">${p.name}</h3>
+            <div style="background:#e8fbf1; color:var(--primary-dark); display:inline-block; padding:6px 14px; border-radius:30px; font-weight:bold; margin-bottom:15px;">
                 ${oldPriceDetailHtml}
                 <span>বর্তমান মূল্য: ৳ ${p.price}</span>
             </div>
-            <p style="font-size:14px; color:#555; line-height:1.6; white-space: pre-wrap; background:#f9f9f9; padding:10px; border-radius:8px;">${p.description || "এই পণ্যটির বিস্তারিত বিবরণ নেই।"}</p>
+            <p style="font-size:14px; color:#4a5568; line-height:1.6; white-space: pre-wrap; background:#f8fafc; padding:12px; border-radius:10px; margin-bottom:20px;">${p.description || "এই পণ্যটির বিস্তারিত বিবরণ নেই।"}</p>
             <button class="btn-order" onclick="closeInfoModal(); openOrder('${p.name}', '${p.price}', '${p.code || 'N/A'}')">এখনি অর্ডার করুন</button>
         `;
     }
 
+    /* নতুন কুইক বার লজিক যা আইটেমগুলোকে হেডার টপ বারে রেন্ডার করবে */
     async function loadQuickMenu() {
-        const menuArea = document.getElementById('quickMenuArea');
+        const menuArea = document.getElementById('topActionBarArea');
         try {
             const res = await fetch(quickMenuApi);
             const data = await res.json();
@@ -488,7 +736,7 @@
                 let html = "";
                 data.forEach(item => {
                     let action = item.link.includes('http') || item.link.includes('tel:') ? `href="${item.link}" target="_blank"` : `onclick="alert('${item.link}')"`;
-                    html += `<a ${action} class="quick-item"><i class="${item.icon}"></i><span>${item.title}</span></a>`;
+                    html += `<a ${action} class="top-action-item"><i class="${item.icon}"></i><span>${item.title}</span></a>`;
                     
                     const titleLwr = item.title.toLowerCase();
                     const linkLwr = item.link.toLowerCase();
@@ -511,8 +759,8 @@
                 menuArea.innerHTML = html;
             }
         } catch(e) { 
-            console.error("Quick menu and footer dynamic elements load error", e);
-            menuArea.innerHTML = `<p style="font-size:10px; margin:auto;">লোড ব্যর্থ</p>`; 
+            console.error("Top bar quick menu load error", e);
+            menuArea.innerHTML = ``; 
         }
     }
 
@@ -520,7 +768,7 @@
         try {
             const sRes = await fetch(serviceApi);
             const services = await sRes.json();
-            let html = '<div class="menu-divider"> Sajar BD পলিসি </div>';
+            let html = '<div class="menu-divider"> Sajar BD</div>';
             services.forEach(item => { html += `<a href="${item.link}" target="_blank"><i class="${item.icon}"></i> ${item.title}</a>`; });
             html += '<div class="menu-divider">প্রয়োজন অনুযায়ী সেবা নিন</div>';
             const extraCats = ['হেল্পলাইন'];
@@ -543,10 +791,10 @@
             let filteredByCategory = data.filter(item => item.category === category);
             if(filteredByCategory.length > 0) {
                 let areas = [...new Set(filteredByCategory.map(item => item.area || 'অন্যান্য এলাকা'))];
-                let html = `<p style="font-size:13px; color:#333; margin-bottom:10px; font-weight:bold;">আপনার এলাকা নির্বাচন করুন:</p>`;
-                html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:15px;">`;
+                let html = `<p style="font-size:13px; color:var(--text-main); margin-bottom:12px; font-weight:bold;">আপনার এলাকা নির্বাচন করুন:</p>`;
+                html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:15px;">`;
                 areas.forEach(area => {
-                    html += `<button onclick="showAreaDetails('${category}', '${area}')" style="background:#f0f7f0; border:1px solid #4CAF50; padding:10px 5px; border-radius:8px; font-size:12px; cursor:pointer; color:#2e7d32; font-weight:bold;"><i class="fas fa-map-marker-alt"></i> ${area}</button>`;
+                    html += `<button onclick="showAreaDetails('${category}', '${area}')" style="background:#f0fbf5; border:1px solid var(--primary-color); padding:12px 5px; border-radius:10px; font-size:13px; cursor:pointer; color:var(--primary-dark); font-weight:bold;"><i class="fas fa-map-marker-alt"></i> ${area}</button>`;
                 });
                 html += `</div><div id="areaDetailContent"></div>`;
                 infoContentEl.innerHTML = html;
@@ -560,9 +808,9 @@
     function showAreaDetails(category, area) {
         let filteredByArea = window.currentCategoryData.filter(item => (item.area || 'অন্যান্য এলাকা') === area);
         let detailDiv = document.getElementById('areaDetailContent');
-        let html = `<h4 style="border-bottom:2px solid #4CAF50; padding-bottom:5px; font-size:14px; color:#4CAF50; margin-top:10px;">${area} এর তালিকা:</h4>`;
+        let html = `<h4 style="border-bottom:2px solid var(--primary-color); padding-bottom:6px; font-size:14px; color:var(--primary-dark); margin-top:15px; font-weight:700;">${area} এর তালিকা:</h4>`;
         filteredByArea.forEach(item => {
-            html += `<div class="service-info-card" style="margin-top:10px;"><b>${item.name}</b><a href="tel:${item.phone}" class="phone"><i class="fas fa-phone-alt"></i> ${item.phone}</a><div style="font-size:12px; color:#555; background:#fff; padding:5px; border-radius:4px; border:1px dashed #ccc; margin-top:5px;">${item.description || item.details || 'কোনো বিবরণ দেওয়া নেই'}</div></div>`;
+            html += `<div class="service-info-card" style="margin-top:10px;"><b>${item.name}</b><a href="tel:${item.phone}" class="phone"><i class="fas fa-phone-alt"></i> ${item.phone}</a><div style="font-size:12px; color:#555; background:#fff; padding:8px; border-radius:6px; border:1px dashed #cbd5e1; margin-top:6px;">${item.description || item.details || 'কোনো বিবরণ দেওয়া নেই'}</div></div>`;
         });
         detailDiv.innerHTML = html;
         detailDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -612,7 +860,7 @@
             const res = await fetch(infoApi);
             const data = await res.json();
             let html = "";
-            data.forEach(item => { html += `<div class="info-item"><b>${item.title}</b><p>${item.details}</p></div>`; });
+            data.forEach(item => { html += `<div class="info-item" style="margin-bottom:15px;"><b style="color:var(--text-main); font-size:14px; display:block; margin-bottom:4px;">${item.title}</b><p style="margin:0; color:var(--text-muted); font-size:13px; line-height:1.5;">${item.details}</p></div>`; });
             infoContentEl.innerHTML = html || "কোনো তথ্য পাওয়া যায়নি।";
         } catch(e) { infoContentEl.innerHTML = "লোড ব্যর্থ।"; }
     }
@@ -647,7 +895,7 @@
         };
         saveOrderToLocal(data);
         fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-        .then(() => { alert(" অর্ডার সফল! খুব শীগ্রই আমাদের একজন প্রতিনিধি আপনার সাথে যোগাযোগ করবে ধন্যবাদ।"); closeOrder(); btn.innerText = "অর্ডার নিশ্চিত করুন"; btn.disabled = false; })
+        .then(() => { alert("অর্ডার সফল! খুব শীঘ্রই আমাদের একজন প্রতিনিধি আপনার সাথে যোগাযোগ করবে, ধন্যবাদ।"); closeOrder(); btn.innerText = "অর্ডার নিশ্চিত করুন"; btn.disabled = false; })
         .catch(() => { alert("সমস্যা হয়েছে!"); btn.disabled = false; });
     }
 
@@ -664,12 +912,12 @@
         infoModalEl.style.display = 'flex';
         let history = JSON.parse(localStorage.getItem('sajar_orders') || "[]");
         if(history.length === 0) {
-            infoContentEl.innerHTML = "<p style='text-align:center; padding:20px;'>এখনো কোনো অর্ডার করেননি।</p>";
+            infoContentEl.innerHTML = "<p style='text-align:center; padding:20px; color:var(--text-muted);'>এখনো কোনো অর্ডার করেননি।</p>";
             return;
         }
         let html = "";
         history.forEach(item => {
-            html += `<div class="history-card"><b style="color:#4CAF50;">${item.pName}</b><span>তারিখ: ${item.date}</span><span>পরিমাণ: ${item.quantity} টি | মোট: ${item.total}</span><span style="font-size:10px; border-top:1px solid #eee; margin-top:5px; padding-top:3px;">ঠিকানা: ${item.address}</span></div>`;
+            html += `<div class="history-card"><b style="color:var(--primary-dark); font-size:14px;">${item.pName}</b><span>তারিখ: ${item.date}</span><span>পরিমাণ: ${item.quantity} টি | মোট: ${item.total}</span><span style="font-size:11px; border-top:1px dashed #edf2f7; margin-top:6px; padding-top:6px; color:var(--text-main);">ঠিকানা: ${item.address}</span></div>`;
         });
         infoContentEl.innerHTML = html;
     }
@@ -679,4 +927,5 @@
 
 </body>
 </html>
+
 
