@@ -293,7 +293,7 @@
 <body>
 
 <div class="header-top-bar">
-    <span class="top-special-msg" onclick="openInfoModal()">বিশেষ বার্তা</span>
+    <span class="top-special-msg" onclick="openInfoModal()">প্রয়োজনীয় তথ্য</span>
     <div id="topActionBarArea" style="display: flex; gap: 12px;"></div>
 </div>
 
@@ -349,7 +349,7 @@
 <footer class="site-footer">
     <div class="footer-content">
         <div class="footer-logo-desc">
-            <img id="footer-logo" src="https://i.postimg.cc/g2swtMPr/1778585672894.png" alt="Sajar BD Logo" style="max-height: 35px;">
+            <img id="footer-logo" src="https://i.postimg.cc/N0ZJxz5X/20260623-121845.png" alt="Sajar BD Logo" style="max-height: 35px;">
             <p class="footer-desc">
                 Sajar BD হলো আপনার নির্ভরযোগ্য অনলাইন শপিং প্ল্যাটফর্ম, যেখানে গ্যাজেট, গ্রোসারি ও দৈনন্দিন প্রয়োজনীয় পণ্য পাবেন সাশ্রয়ী দামে। আমরা নিশ্চিত করি মানসম্মত পণ্য, দ্রুত ডেলিভারি এবং সহজ অর্ডার প্রক্রিয়া—যাতে আপনার কেনাকাটা হয় ঝামেলাহীন ও আনন্দদায়ক।
             </p>
@@ -614,7 +614,7 @@
             
             let gridHtml = `
                 <div class="category-item" onclick="filterProduct('all')">
-                    <img src="https://i.postimg.cc/g2swtMPr/1778585672894.png">
+                    <img src="https://i.postimg.cc/N0ZJxz5X/20260623-121845.png">
                     <span>সব পণ্য</span>
                 </div>`;
 
@@ -671,7 +671,7 @@
 
             html += `<div class="card">
                         ${badgeHtml}
-                        <span class="card-code">আইডি: ${pCode}</span>
+                        <span class="card-code">কোড: ${pCode}</span>
                         <img src="${p.image}" onclick="showProductDetail(${index})">
                         <h4 onclick="showProductDetail(${index})">${p.name}</h4>
                         <div class="desc" onclick="showProductDetail(${index})">${p.description || "বিস্তারিত জানতে ক্লিক করুন..."}</div>
